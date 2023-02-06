@@ -58,7 +58,7 @@ PUT /resource
       "visit_time": {
         "type": "date"
       },
-      "sha1": {
+      "sha256": {
         "type": "keyword"
       }
     }
