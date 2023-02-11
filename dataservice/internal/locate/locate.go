@@ -1,6 +1,7 @@
 package locate
 
 import (
+	"fmt"
 	"nagato/common/rabbitmq"
 	"nagato/dataservice/internal/config"
 	"path/filepath"
@@ -21,7 +22,12 @@ func Locate(hash string) bool {
 }
 
 func StartLocate() {
-	q := rabbitmq.New(rabbitmq.RABBITMQ_SERVER)
+	dns := fmt.Sprintf(rabbitmq.RABBITMQ_SERVER_TEMPLATE,
+		config.RabbitMqConfig.Username,
+		config.RabbitMqConfig.Password,
+		config.RabbitMqConfig.Host,
+		config.RabbitMqConfig.Port)
+	q := rabbitmq.New(dns)
 	defer q.Close()
 
 	q.Bind("dataServers")
@@ -35,14 +41,14 @@ func StartLocate() {
 
 		exist := Locate(hash)
 		if exist {
-			q.Send(msg.ReplyTo, config.LISTEN_ADDRESS)
+			q.Send(msg.ReplyTo, config.ServerConfig.Address())
 		}
 	}
 }
 
 func CollectMatters() {
 	// 读取存储目录里的所有文件信息
-	files, _ := filepath.Glob("/tmp" + "/objects/*")
+	files, _ := filepath.Glob(config.FlieSystemConfig.StoreDir + "*")
 
 	// 获取每个文件的文件名（散列值），加入缓存
 	for i := range files {

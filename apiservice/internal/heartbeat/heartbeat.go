@@ -1,7 +1,9 @@
 package heartbeat
 
 import (
+	"fmt"
 	"math/rand"
+	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
 	"strconv"
 	"sync"
@@ -14,7 +16,12 @@ var (
 )
 
 func ListenHeartbeat() {
-	q := rabbitmq.New(rabbitmq.RABBITMQ_SERVER)
+	dns := fmt.Sprintf(rabbitmq.RABBITMQ_SERVER_TEMPLATE,
+		config.RabbitMqConfig.Username,
+		config.RabbitMqConfig.Password,
+		config.RabbitMqConfig.Host,
+		config.RabbitMqConfig.Port)
+	q := rabbitmq.New(dns)
 	defer q.Close()
 
 	q.Bind("apiServers")

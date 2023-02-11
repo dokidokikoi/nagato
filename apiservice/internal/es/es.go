@@ -1,6 +1,7 @@
 package es
 
 import (
+	"nagato/apiservice/internal/config"
 	commonEs "nagato/common/es"
 	"os"
 
@@ -20,8 +21,8 @@ func (s *esStore) ResourceEs() *resourceEs {
 }
 
 func NewEsSore() *esStore {
-	cert, _ := os.ReadFile("http_ca.crt")
-	cli, err := commonEs.NewEsClient("elastic", "ADR*piFezssmbUhhN8*S", cert, "https://localhost:9200")
+	cert, _ := os.ReadFile(config.EsConfig.Cert)
+	cli, err := commonEs.NewEsClient(config.EsConfig.Username, config.EsConfig.Password, cert, config.EsConfig.Url())
 	if err != nil {
 		panic(err)
 	}

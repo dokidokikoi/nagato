@@ -29,7 +29,7 @@ func Logger() gin.HandlerFunc {
 		ctx.Next()
 
 		param := requestParams{}
-		param.Latency = time.Now().Sub(start)
+		param.Latency = time.Since(start)
 		param.ClientIP = ctx.ClientIP()
 		param.Method = ctx.Request.Method
 		param.StatusCode = ctx.Writer.Status()
@@ -37,6 +37,6 @@ func Logger() gin.HandlerFunc {
 			path = path + "?" + raw
 		}
 		param.Path = path
-		zap.L().Sugar().Infof("接口调用		%#v", param)
+		zap.L().Sugar().Infof("接口调用		%v", param)
 	}
 }

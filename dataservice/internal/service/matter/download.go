@@ -3,12 +3,13 @@ package matter
 import (
 	"context"
 	"nagato/common/tools"
+	"nagato/dataservice/internal/config"
 	"nagato/dataservice/internal/locate"
 	"os"
 )
 
 func (s matterSrv) GetFilePath(ctx context.Context, hash string) string {
-	file := "/tmp" + "/objects/" + hash
+	file := config.FlieSystemConfig.StoreDir + hash
 	f, _ := os.Open(file)
 	h, err := tools.CalculateHash(f)
 	if err != nil {
