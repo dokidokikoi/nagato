@@ -1,5 +1,8 @@
-# nagato
-Data Integration Thought Entity
+<p align="center"><img width="180" src="./logo.png" alt="logo"></p>
+<h1 align="center">nagato</h1>
+<h4 align="center">Data Integration Thought Entity</h4>
+
+
 
 ```json
 PUT /resource
