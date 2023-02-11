@@ -1,16 +1,15 @@
 package controller
 
 import (
-	"encoding/json"
 	"io"
 	"nagato/apiservice/internal/es"
 	"nagato/apiservice/internal/locate"
 	"nagato/apiservice/internal/service"
-	commonEs "nagato/common/es"
 	"nagato/common/tools"
 	"net/http"
 	"strconv"
 
+	"github.com/dokidokikoi/go-common/log/zap"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,20 +18,21 @@ type MatterController struct {
 }
 
 func (c MatterController) Locate(ctx *gin.Context) {
-	name := ctx.Param("name")
-	info := locate.Locate(name)
+	hash := ctx.Param("hash")
+	info := locate.Locate(hash)
 	if len(info) == 0 {
-		ctx.JSON(http.StatusNotFound, "")
+		zap.L().Sugar().Errorf("%s: 文件不存在", hash)
+		ctx.JSON(http.StatusNotFound, "文件不存在")
 		return
 	}
-	b, _ := json.Marshal(info)
-	ctx.JSON(http.StatusOK, b)
+	ctx.JSON(http.StatusOK, info)
 }
 
 func (c MatterController) UploadMatter(ctx *gin.Context) {
 	name := ctx.Param("name")
 	hash := tools.GetHashFromHeader(ctx.Request.Header)
 	if hash == "" {
+		zap.L().Sugar().Errorf("name: %s hash: %s 不能为空", name, hash)
 		ctx.JSON(http.StatusBadRequest, "")
 		return
 	}
@@ -40,12 +40,14 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 
 	err := c.service.Matter().Upload(ctx, hash, size, ctx.Request.Body)
 	if err != nil {
+		zap.L().Sugar().Errorf("上传文件失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
 
 	// 将上传文件元信息加入es
-	if es.CreateLastestResource(name, hash, size) != nil {
+	if err := c.service.Matter().CreateLastestResource(ctx, name, hash, size); err != nil {
+		zap.L().Sugar().Errorf("上传文件元信息失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
@@ -55,23 +57,27 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, err := strconv.Atoi(ctx.Query("version"))
 	if err != nil {
+		zap.L().Sugar().Errorf("文件版本号必须为整型, name: %s, verion: %s", name, version)
 		ctx.JSON(http.StatusBadRequest, "version字段为数字")
 		return
 	}
 
-	meta, err := es.GetResourceMate(name, version)
+	meta, err := c.service.Matter().GetResourceMate(ctx, name, version)
 	if err != nil {
+		zap.L().Sugar().Errorf("获取文件元信息失败, name: %s, version: %s, err: %s", name, version, err.Error())
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
 
 	if meta.Hash == "" {
+		zap.L().Sugar().Errorf("文件不存在, name: %s, version: %s", name, version)
 		ctx.JSON(http.StatusNotFound, "文件不存在")
 		return
 	}
 
 	r, err := c.service.Matter().Download(ctx, meta.Hash)
 	if err != nil {
+		zap.L().Sugar().Errorf("下载文件失败, name: %s, hash: %s, version: %s, err: %s", name, meta.Hash, version, err.Error())
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
@@ -81,8 +87,9 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 
 func (c MatterController) DelMatter(ctx *gin.Context) {
 	name := ctx.Param("name")
-	err := es.CreateLastestResource(name, "", 0)
+	err := c.service.Matter().CreateLastestResource(ctx, name, "", 0)
 	if err != nil {
+		zap.L().Sugar().Errorf("删除文件失败, name: %s, err: %s", name, err.Error())
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
@@ -92,10 +99,11 @@ func (c MatterController) VersionList(ctx *gin.Context) {
 	name := ctx.Param("name")
 	from := 0
 	size := 100
-	var res []commonEs.Metadata
+	var res []*es.Resource
 	for {
-		metas, err := es.SearchResourceAllVersion(name, from, size)
+		metas, err := c.service.Matter().SearchResourceAllVersion(name, from, size)
 		if err != nil {
+			zap.L().Sugar().Errorf("获取文件元信息失败, name: %s, err: %s", name, err.Error())
 			ctx.JSON(http.StatusInternalServerError, "")
 			return
 		}

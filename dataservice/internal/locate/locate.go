@@ -2,7 +2,7 @@ package locate
 
 import (
 	"nagato/common/rabbitmq"
-	"os"
+	"nagato/dataservice/internal/config"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -35,14 +35,14 @@ func StartLocate() {
 
 		exist := Locate(hash)
 		if exist {
-			q.Send(msg.ReplyTo, rabbitmq.RABBITMQ_SERVER)
+			q.Send(msg.ReplyTo, config.LISTEN_ADDRESS)
 		}
 	}
 }
 
 func CollectMatters() {
 	// 读取存储目录里的所有文件信息
-	files, _ := filepath.Glob(os.Getenv("STORE_ROOT") + "/object/*")
+	files, _ := filepath.Glob("/tmp" + "/objects/*")
 
 	// 获取每个文件的文件名（散列值），加入缓存
 	for i := range files {

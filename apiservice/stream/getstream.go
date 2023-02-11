@@ -33,5 +33,5 @@ func NewGetStream(server, hash string) (*GetStream, error) {
 		return nil, fmt.Errorf("invalid server %s matter %s", server, hash)
 	}
 
-	return newGetStream("http://" + server + "/objects/" + hash)
+	return newGetStream("http://" + server + "/file/" + hash)
 }

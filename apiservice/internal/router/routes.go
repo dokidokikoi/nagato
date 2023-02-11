@@ -11,7 +11,7 @@ func InitRoutes(r *gin.Engine) {
 	fileR := r.Group("/file")
 	{
 		fileController := control.Matter()
-		fileR.GET("/locate", fileController.Locate)
+		fileR.GET("/locate/:hash", fileController.Locate)
 		fileR.PUT("/:name", fileController.UploadMatter)
 		fileR.GET("/:name", fileController.DownloadMatter)
 		fileR.DELETE("/:name", fileController.DelMatter)

@@ -8,7 +8,7 @@ import (
 )
 
 func (s matterSrv) GetFilePath(ctx context.Context, hash string) string {
-	file := os.Getenv("STORE_ROOT") + "/objects/" + hash
+	file := "/tmp" + "/objects/" + hash
 	f, _ := os.Open(file)
 	h, err := tools.CalculateHash(f)
 	if err != nil {

@@ -31,7 +31,8 @@ func (c MatterController) CreateMatterTemp(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
-	ctx.JSON(http.StatusOK, uuid)
+
+	io.Copy(ctx.Writer, strings.NewReader(uuid))
 }
 
 // 将临时文件存入临时目录

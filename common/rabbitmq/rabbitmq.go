@@ -6,7 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const RABBITMQ_SERVER = "127.0.0.1:5672"
+const RABBITMQ_SERVER = "amqp://harukaze:123456@localhost:5672"
 
 type RabbitMQ struct {
 	channel  *amqp.Channel

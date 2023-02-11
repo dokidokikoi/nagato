@@ -15,8 +15,10 @@ type tempInfo struct {
 	Size int64
 }
 
+const STORE_ROOT = "/tmp"
+
 func (t *tempInfo) writeToFile() error {
-	f, e := os.Create(os.Getenv("STORE_ROOT") + "/temp/" + t.Uuid)
+	f, e := os.Create(STORE_ROOT + "/temp/" + t.Uuid)
 	if e != nil {
 		return e
 	}
@@ -41,7 +43,7 @@ func (s matterSrv) CreateTempFile(ctx context.Context, name string, uuid string,
 	}
 
 	// 创建出临时文件的文件
-	os.Create(os.Getenv("STORE_ROOT") + "/temp/" + info.Uuid + ".dat")
+	os.Create(STORE_ROOT + "/temp/" + info.Uuid + ".dat")
 	return nil
 }
 
@@ -51,7 +53,7 @@ func (s matterSrv) WriteTempFile(ctx context.Context, uuid string, data io.Reade
 		return err
 	}
 
-	infoFile := os.Getenv("STORE_ROOT" + "/temp/" + uuid)
+	infoFile := STORE_ROOT + "/temp/" + uuid
 	datFile := infoFile + ".dat"
 	f, err := os.OpenFile(datFile, os.O_WRONLY|os.O_APPEND, 0)
 	if err != nil {
@@ -83,7 +85,7 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid string) error {
 		return err
 	}
 
-	infoFile := os.Getenv("STORE_ROOT" + "/temp/" + uuid)
+	infoFile := STORE_ROOT + "/temp/" + uuid
 	datFile := infoFile + ".dat"
 	f, err := os.Open(datFile)
 	if err != nil {
@@ -105,7 +107,7 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid string) error {
 		return errors.New("文件大小不匹配")
 	}
 
-	os.Rename(datFile, os.Getenv("STORE_ROOT")+"/objects/"+tempInfo.Name)
+	os.Rename(datFile, STORE_ROOT+"/objects/"+tempInfo.Name)
 	locate.Add(tempInfo.Name)
 
 	return nil
@@ -113,7 +115,7 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid string) error {
 
 // 删除临时文件
 func (c matterSrv) DelMatterTemp(ctx context.Context, uuid string) {
-	infoFile := os.Getenv("STORE_ROOT") + "/temp/" + uuid
+	infoFile := STORE_ROOT + "/temp/" + uuid
 	datFile := infoFile + ".dat"
 	os.Remove(infoFile)
 	os.Remove(datFile)
@@ -121,7 +123,7 @@ func (c matterSrv) DelMatterTemp(ctx context.Context, uuid string) {
 
 // 读取临时文件的信息文件
 func readFromTempFile(uuid string) (*tempInfo, error) {
-	f, err := os.Open(os.Getenv("STORE_ROOT") + "/temp/" + uuid)
+	f, err := os.Open(STORE_ROOT + "/temp/" + uuid)
 	if err != nil {
 		return nil, err
 	}
