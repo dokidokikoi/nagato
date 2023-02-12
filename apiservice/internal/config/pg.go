@@ -5,6 +5,7 @@ type PGConf struct {
 	Port     int
 	Database string `validate:"required"`
 	Username string `validate:"required"`
+	TimeZone string
 	Password string
 }
 
@@ -13,7 +14,7 @@ const (
 )
 
 var PgConfig = &PGConf{
-	Port: 5432, Host: "127.0.0.1", Database: "postgres", Password: "postgres",
+	Port: 5432, Host: "127.0.0.1", Database: "postgres", TimeZone: "Asia/Shanghai", Password: "postgres",
 }
 
 func init() {

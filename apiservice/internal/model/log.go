@@ -47,7 +47,7 @@ type Log struct {
 	Type        string        `json:"type" bson:"type"`
 	Subject     *EventSubject `json:"subject" bson:"subject"`
 	Target      *EventTarget  `json:"target" bson:"target"`
-	Result      bool          `json:"result" bson:"result"`
+	Result      *bool         `json:"result" bson:"result"`
 	Reason      string        `json:"reason" bson:"reason"`
 	Description string        `json:"description" bson:"description"`
 	Detail      any           `json:"-"`

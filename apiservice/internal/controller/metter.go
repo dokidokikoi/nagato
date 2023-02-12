@@ -4,6 +4,7 @@ import (
 	"io"
 	"nagato/apiservice/internal/es"
 	"nagato/apiservice/internal/locate"
+	"nagato/apiservice/internal/model"
 	"nagato/apiservice/internal/service"
 	"nagato/common/tools"
 	"net/http"
@@ -37,8 +38,31 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 		return
 	}
 	size := tools.GetSizeFromHeader(ctx.Request.Header)
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		zap.L().Sugar().Errorf("从请求获取文件失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
+		ctx.JSON(http.StatusInternalServerError, "")
+		return
+	}
+	reader, err := file.Open()
+	if err != nil {
+		zap.L().Sugar().Errorf("获取文件失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
+		ctx.JSON(http.StatusInternalServerError, "")
+		return
+	}
 
-	err := c.service.Matter().Upload(ctx, hash, size, ctx.Request.Body)
+	createMatter := &model.Matter{
+		Name:   file.Filename,
+		Sha256: hash,
+		Size:   uint(file.Size),
+	}
+	if err = c.service.Matter().Create(ctx, createMatter); err != nil {
+		zap.L().Sugar().Errorf("保存文件信息失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
+		ctx.JSON(http.StatusInternalServerError, "")
+		return
+	}
+
+	err = c.service.Matter().Upload(ctx, hash, file.Size, reader)
 	if err != nil {
 		zap.L().Sugar().Errorf("上传文件失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
 		ctx.JSON(http.StatusInternalServerError, "")

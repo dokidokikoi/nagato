@@ -11,7 +11,7 @@ var (
 
 type SmallFileCache struct {
 	ID         uint      `json:"-" gorm:"primary_key"`
-	MatterUuid string    `json:"-" gorm:"type:char(36);unique"`
+	MatterID   uint      `json:"-" gorm:"uniqueIndex"`
 	Name       string    `json:"-" gorm:"index:idx_small_file_cache_name"`
 	LastVisit  time.Time `json:"-"`
 	VisitTimes uint      `json:"-"`

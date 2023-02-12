@@ -29,6 +29,7 @@ func ListenHeartbeat() {
 
 	go removeExpireDataServer()
 	for msg := range c {
+		fmt.Println("---------------got message--------------")
 		dataServer, e := strconv.Unquote(string(msg.Body))
 		if e != nil {
 			panic(e)

@@ -17,8 +17,8 @@ type Dashboard struct {
 	TotalFileSize  int64     `json:"total_file_size" gorm:"type:bigint(20) not null;default:0"`  //total file's size
 	AvgCost        int64     `json:"avg_cost" gorm:"type:bigint(20) not null;default:0"`         //api time cost in ms
 	Dt             string    `json:"dt" gorm:"type:varchar(45) not null;index:idx_dashboard_dt"` //date. index should unique globally.
-	UpdateAt       time.Time `json:"update_at"`
-	CreateAt       time.Time `json:"create_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 /**

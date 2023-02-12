@@ -4,6 +4,7 @@ postgresql:
   username: postgres
   database: 
   password: root
+  timezone: Asia/Shanghai
 
 mongo:
   uri: 127.0.0.1:27017
