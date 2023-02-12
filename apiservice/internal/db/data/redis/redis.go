@@ -20,9 +20,9 @@ var (
 func GetRedisFactory() (*Store, error) {
 	once.Do(func() {
 		client := redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%d", config.RedisConfig.Host, config.RedisConfig.Port),
-			Password: config.RedisConfig.Password,
-			DB:       config.RedisConfig.DB,
+			Addr:     fmt.Sprintf("%s:%d", config.Config().RedisConfig.Host, config.Config().RedisConfig.Port),
+			Password: config.Config().RedisConfig.Password,
+			DB:       config.Config().RedisConfig.DB,
 		})
 		redisFactory = &Store{cli: client}
 

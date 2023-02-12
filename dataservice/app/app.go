@@ -17,5 +17,5 @@ func (a App) Run() {
 	r.Use(middleware.Logger())
 	r.Use(gin.Recovery())
 	inittask.Init(r)
-	r.Run(config.ServerConfig.Address())
+	r.Run(config.Config().ServerConfig.Address())
 }

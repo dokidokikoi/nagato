@@ -9,7 +9,7 @@ import (
 )
 
 func (s matterSrv) GetFilePath(ctx context.Context, hash string) string {
-	file := config.FlieSystemConfig.StoreDir + hash
+	file := config.Config().FileSystemConfig.StoreDir + hash
 	f, _ := os.Open(file)
 	h, err := tools.CalculateHash(f)
 	if err != nil {

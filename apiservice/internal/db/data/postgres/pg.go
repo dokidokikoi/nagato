@@ -53,15 +53,7 @@ func (d *Store) Users() *users {
 }
 
 func GetPGFactory() (*Store, error) {
-	dns := fmt.Sprintf(`host=%s user=%s dbname=%s port=%d sslmode=disable TimeZone=%s password=%s`,
-		config.PgConfig.Host,
-		config.PgConfig.Username,
-		config.PgConfig.Database,
-		config.PgConfig.Port,
-		config.PgConfig.TimeZone,
-		config.PgConfig.Password,
-	)
-	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(config.Config().PGConfig.Dns()), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {

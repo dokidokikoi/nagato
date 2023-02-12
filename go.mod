@@ -3,6 +3,7 @@ module nagato
 go 1.19
 
 require (
+	github.com/dokidokikoi/go-common v0.0.0-20230126103301-20d76299153e
 	github.com/gin-gonic/gin v1.8.2
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.0.2
@@ -47,8 +48,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
+replace github.com/dokidokikoi/go-common => /Users/kido/gitcode/go-common
+
 require (
-	github.com/dokidokikoi/go-common v0.0.0-20230126103301-20d76299153e
 	github.com/elastic/go-elasticsearch/v8 v8.6.0
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

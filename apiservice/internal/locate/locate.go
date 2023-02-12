@@ -1,7 +1,6 @@
 package locate
 
 import (
-	"fmt"
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
 	"strconv"
@@ -9,12 +8,7 @@ import (
 )
 
 func Locate(name string) string {
-	dns := fmt.Sprintf(rabbitmq.RABBITMQ_SERVER_TEMPLATE,
-		config.RabbitMqConfig.Username,
-		config.RabbitMqConfig.Password,
-		config.RabbitMqConfig.Host,
-		config.RabbitMqConfig.Port)
-	q := rabbitmq.New(dns)
+	q := rabbitmq.New(config.Config().RabbitMqConfig.Dns())
 	q.Publish("dataServers", name)
 	c := q.Consume()
 

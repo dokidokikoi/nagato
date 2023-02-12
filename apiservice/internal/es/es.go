@@ -21,8 +21,8 @@ func (s *esStore) ResourceEs() *resourceEs {
 }
 
 func NewEsSore() *esStore {
-	cert, _ := os.ReadFile(config.EsConfig.Cert)
-	cli, err := commonEs.NewEsClient(config.EsConfig.Username, config.EsConfig.Password, cert, config.EsConfig.Url())
+	cert, _ := os.ReadFile(config.Config().EsConfig.Cert)
+	cli, err := commonEs.NewEsClient(config.Config().EsConfig.Username, config.Config().EsConfig.Password, cert, config.Config().EsConfig.Url())
 	if err != nil {
 		panic(err)
 	}

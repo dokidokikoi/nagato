@@ -1,6 +1,6 @@
 package config
 
-type FileSystemConf struct {
+type FileSystemConfig struct {
 	StoreDir string
 	TempDir  string
 }
@@ -9,13 +9,14 @@ const (
 	fileSystemKey string = "filesystem"
 )
 
-var FlieSystemConfig = &FileSystemConf{
-	StoreDir: "/tmp/objects/", TempDir: "/tmp/temp/",
-}
-
-func init() {
-	fileSystemConfig := GetSpecConfig(fileSystemKey)
-	if fileSystemConfig != nil {
-		fileSystemConfig.Unmarshal(fileSystemConfig)
+func GetFileSystemInfo() FileSystemConfig {
+	fileSystemConfig := &FileSystemConfig{
+		StoreDir: "/tmp/objects/", TempDir: "/tmp/temp/",
 	}
+	conf := GetSpecConfig(fileSystemKey)
+	if conf != nil {
+		conf.Unmarshal(fileSystemConfig)
+	}
+
+	return *fileSystemConfig
 }

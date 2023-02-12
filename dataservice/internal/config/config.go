@@ -1,30 +1,31 @@
 package config
 
 import (
-	"fmt"
-
+	conf "github.com/dokidokikoi/go-common/config"
 	"github.com/spf13/viper"
 )
 
-var config *viper.Viper
+var configInfo *config
 
-func Config() *viper.Viper {
-	return config
+type config struct {
+	FileSystemConfig
+	conf.RabbitMqConfig
+	conf.ServerConfig
 }
 
-func SetConfig(filename string) {
-	config = viper.New()
-	config.SetConfigFile(filename)
-	err := config.ReadInConfig()
-	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %s", err))
-	}
-}
-
-func init() {
-	SetConfig("./internal/conf/application.yml")
+func Config() *config {
+	return configInfo
 }
 
 func GetSpecConfig(key string) *viper.Viper {
-	return config.Sub(key)
+	return conf.Config().Sub(key)
+}
+
+func init() {
+	conf.SetConfig("./internal/conf/application.yml")
+	configInfo = &config{
+		FileSystemConfig: GetFileSystemInfo(),
+		ServerConfig:     conf.GetServerInfo(),
+		RabbitMqConfig:   conf.GetRabbitMqInfo(),
+	}
 }

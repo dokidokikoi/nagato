@@ -1,7 +1,6 @@
 package heartbeat
 
 import (
-	"fmt"
 	"math/rand"
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
@@ -16,12 +15,7 @@ var (
 )
 
 func ListenHeartbeat() {
-	dns := fmt.Sprintf(rabbitmq.RABBITMQ_SERVER_TEMPLATE,
-		config.RabbitMqConfig.Username,
-		config.RabbitMqConfig.Password,
-		config.RabbitMqConfig.Host,
-		config.RabbitMqConfig.Port)
-	q := rabbitmq.New(dns)
+	q := rabbitmq.New(config.Config().RabbitMqConfig.Dns())
 	defer q.Close()
 
 	q.Bind("apiServers")
@@ -29,7 +23,7 @@ func ListenHeartbeat() {
 
 	go removeExpireDataServer()
 	for msg := range c {
-		fmt.Println("---------------got message--------------")
+		// fmt.Println("---------------got message--------------")
 		dataServer, e := strconv.Unquote(string(msg.Body))
 		if e != nil {
 			panic(e)
