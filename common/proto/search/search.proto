@@ -1,0 +1,47 @@
+// 定义我们接口的版本
+syntax = "proto3";
+// 定义包名称
+package api;
+// 定义go安装包名称
+option go_package = "nagato.search/api;search";
+// 定义我们的服务
+service Search {
+    rpc GetDoc (DocReqest) returns (DocResponse);
+    rpc CreateDocByID (DocReqest) returns (Response);
+    rpc UpdateDoc (DocReqest) returns (Response);
+    rpc DelDoc (DocReqest) returns (Response);
+    rpc BulkDoc (DocReqest) returns (Response);
+
+    rpc CreateIndex (IndexReqest) returns (Response);
+    rpc DelIndices (DelIndexReqest) returns (Response);
+
+    rpc SearchDoc (SearchReqest) returns (DocResponse);
+}
+
+message DocReqest {
+    string index = 1;
+    string id = 2;
+    string body = 3;
+}
+
+message DocResponse {
+    bytes doc = 1;
+}
+
+message IndexReqest {
+    string index = 1;
+    string body = 2;
+}
+
+message SearchReqest {
+    string index = 1;
+    string body = 2;
+}
+
+message DelIndexReqest {
+    repeated string indices = 1;
+}
+
+message Response {
+    int32 code = 1;
+}

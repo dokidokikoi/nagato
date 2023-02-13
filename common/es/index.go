@@ -3,7 +3,7 @@ package es
 import "io"
 
 func (cli *EsClient[T]) CreateIndex(index string, body io.Reader) error {
-	_, err := cli.Client.Indices.Create("book", cli.Client.Indices.Create.WithBody(body))
+	_, err := cli.Client.Indices.Create(index, cli.Client.Indices.Create.WithBody(body))
 	return err
 }
 
