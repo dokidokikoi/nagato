@@ -1,0 +1,18 @@
+redis:
+  host: 127.0.0.1
+  port: 6379
+
+elasticsearch:
+  username: elastic
+  password: ADR*piFezssmbUhhN8*S
+  cert: http_ca.crt
+  host: 127.0.0.1
+  port: 9200
+
+server:
+  host: 127.0.0.1
+  port: 10200
+
+rpc: 
+  host: 127.0.0.1
+  port: 10250
