@@ -37,6 +37,6 @@ func Logger() gin.HandlerFunc {
 			path = path + "?" + raw
 		}
 		param.Path = path
-		zap.L().Sugar().Infof("接口调用		%v", param)
+		zap.L().Sugar().Infof("接口调用\t\t%+v", param)
 	}
 }
