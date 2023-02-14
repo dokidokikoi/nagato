@@ -72,7 +72,7 @@ func GetPGFactory() (*Store, error) {
 	sqlDB.SetMaxIdleConns(100)
 
 	// 自动化迁移
-	if err := resetDatabase(db); err != nil {
+	if err := migrateDatabase(db); err != nil {
 		fmt.Println(err)
 	}
 

@@ -1,25 +1,3 @@
-postgresql:
-  host: 127.0.0.1
-  port: 5432
-  username: postgres
-  database: 
-  password: root
-
-mongo:
-  uri: 127.0.0.1:27017
-  database: 
-
-redis:
-  host: 127.0.0.1
-  port: 6379
-
-elasticsearch:
-  username: elastic
-  password: ADR*piFezssmbUhhN8*S
-  cert: http_ca.crt
-  host: 127.0.0.1
-  port: 9200
-
 rabbitmq:
   username: harukaze
   password: 123456
@@ -32,4 +10,4 @@ filesystem:
 
 server:
   host: 127.0.0.1
-  port: 8100
+  port: 10100

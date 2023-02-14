@@ -9,6 +9,7 @@ import (
 	"nagato/common/tools"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/dokidokikoi/go-common/log/zap"
 	"github.com/gin-gonic/gin"
@@ -50,11 +51,12 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
-
+	nameArr := strings.Split(file.Filename, ".")
 	createMatter := &model.Matter{
-		Name:   file.Filename,
+		Name:   strings.Join(nameArr[0:len(nameArr)-1], ""),
 		Sha256: hash,
 		Size:   uint(file.Size),
+		Ext:    nameArr[len(nameArr)-1],
 	}
 	if err = c.service.Matter().Create(ctx, createMatter); err != nil {
 		zap.L().Sugar().Errorf("保存文件信息失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
