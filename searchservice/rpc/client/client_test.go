@@ -6,10 +6,9 @@ import (
 	"log"
 	apiservice "nagato/apiservice/pkg/plugin"
 	pb "nagato/common/proto/search"
+	"nagato/common/service"
 	"testing"
 
-	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
-	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -22,13 +21,8 @@ func TestClist(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	r := etcd.New(cli)
 
-	conn, err := transgrpc.DialInsecure(
-		context.Background(),
-		transgrpc.WithEndpoint("discovery:///nagato.search"),
-		transgrpc.WithDiscovery(r),
-	)
+	conn, err := service.GetRpcConn(cli, "nagato.search")
 	if err != nil {
 		panic(err)
 	}

@@ -2,10 +2,10 @@ package controller
 
 import (
 	"io"
-	"nagato/apiservice/internal/es"
 	"nagato/apiservice/internal/locate"
 	"nagato/apiservice/internal/model"
 	"nagato/apiservice/internal/service"
+	"nagato/apiservice/internal/service/matter"
 	"nagato/common/tools"
 	"net/http"
 	"strconv"
@@ -123,9 +123,9 @@ func (c MatterController) VersionList(ctx *gin.Context) {
 	name := ctx.Param("name")
 	from := 0
 	size := 100
-	var res []*es.Resource
+	var res []*matter.Resource
 	for {
-		metas, err := c.service.Matter().SearchResourceAllVersion(name, from, size)
+		metas, err := c.service.Matter().SearchResourceAllVersion(ctx, name, from, size)
 		if err != nil {
 			zap.L().Sugar().Errorf("获取文件元信息失败, name: %s, err: %s", name, err.Error())
 			ctx.JSON(http.StatusInternalServerError, "")

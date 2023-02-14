@@ -13,6 +13,8 @@ type config struct {
 	conf.RabbitMqConfig
 	conf.RedisConfig
 	conf.ServerConfig
+	ServiceConfig
+	EtcdConfig
 }
 
 func Config() *config {
@@ -31,5 +33,7 @@ func init() {
 		RabbitMqConfig: conf.GetRabbitMqInfo(),
 		RedisConfig:    conf.GetRadisInfo(),
 		ServerConfig:   conf.GetServerInfo(),
+		ServiceConfig:  GetServiceInfo(),
+		EtcdConfig:     GetEtcdConfig(),
 	}
 }
