@@ -1,6 +1,7 @@
 package inittask
 
 import (
+	"nagato/dataservice/internal/config"
 	"nagato/dataservice/internal/heartbeat"
 	"nagato/dataservice/internal/locate"
 	"nagato/dataservice/internal/router"
@@ -9,6 +10,8 @@ import (
 )
 
 func Init(r *gin.Engine) {
+	config.Init("./application.yml")
+
 	go heartbeat.StartHeartbeat()
 	go locate.StartLocate()
 	locate.CollectMatters()

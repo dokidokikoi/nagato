@@ -9,6 +9,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.0.2
 	go.mongodb.org/mongo-driver v1.11.1
+	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.52.0
 )
 
@@ -54,7 +55,6 @@ require (
 	go.etcd.io/etcd/client/pkg/v3 v3.5.7 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
@@ -66,7 +66,7 @@ replace github.com/dokidokikoi/go-common => /Users/kido/gitcode/nagato_common/go
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/elastic/go-elasticsearch/v8 v8.6.0
-	github.com/gin-contrib/cors v1.4.0
+	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-kratos/kratos/contrib/registry/etcd/v2 v2.0.0-20230213033822-0a076443cba1
 	github.com/go-playground/locales v0.14.0 // indirect

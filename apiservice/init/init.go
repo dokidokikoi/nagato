@@ -1,6 +1,7 @@
 package inittask
 
 import (
+	"nagato/apiservice/internal/config"
 	"nagato/apiservice/internal/db/data"
 	"nagato/apiservice/internal/heartbeat"
 	"nagato/apiservice/internal/router"
@@ -9,6 +10,8 @@ import (
 )
 
 func Init(r *gin.Engine) {
+	config.Init("./application.yml")
+
 	go heartbeat.ListenHeartbeat()
 	data.SetStoreDBFactory()
 

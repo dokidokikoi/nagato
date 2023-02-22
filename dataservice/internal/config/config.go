@@ -5,12 +5,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-var configInfo *config
+var configInfo = &config{}
 
 type config struct {
-	FileSystemConfig
-	conf.RabbitMqConfig
-	conf.ServerConfig
+	FileSystemConfig FileSystemConfig    `mapstructure:"filesystem"`
+	RabbitMqConfig   conf.RabbitMqConfig `mapstructure:"rabbitmq"`
+	ServerConfig     conf.ServerConfig   `mapstructure:"server"`
 }
 
 func Config() *config {
@@ -21,11 +21,6 @@ func GetSpecConfig(key string) *viper.Viper {
 	return conf.Config().Sub(key)
 }
 
-func init() {
-	conf.SetConfig("./internal/conf/application.yml")
-	configInfo = &config{
-		FileSystemConfig: GetFileSystemInfo(),
-		ServerConfig:     conf.GetServerInfo(),
-		RabbitMqConfig:   conf.GetRabbitMqInfo(),
-	}
+func Init(configFile string) {
+	conf.Parse(configFile, configInfo)
 }

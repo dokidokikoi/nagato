@@ -5,14 +5,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-var configInfo *config
+var configInfo = &config{}
 
 type config struct {
-	conf.EsConfig
-	conf.RedisConfig
-	conf.ServerConfig
-	RpcConfig
-	EtcdConfig
+	EsConfig     conf.EsConfig     `mapstructure:"elasticsearch"`
+	RedisConfig  conf.RedisConfig  `mapstructure:"redis"`
+	ServerConfig conf.ServerConfig `mapstructure:"server"`
+	RpcConfig    RpcConfig         `mapstructure:"rpc"`
+	EtcdConfig   conf.EtcdConfig   `mapstructure:"etcd"`
 }
 
 func Config() *config {
@@ -23,13 +23,6 @@ func GetSpecConfig(key string) *viper.Viper {
 	return conf.Config().Sub(key)
 }
 
-func init() {
-	conf.SetConfig("./internal/conf/application.yml")
-	configInfo = &config{
-		EsConfig:     conf.GetEsInfo(),
-		RedisConfig:  conf.GetRadisInfo(),
-		ServerConfig: conf.GetServerInfo(),
-		RpcConfig:    GetRpcInfo(),
-		EtcdConfig:   GetEtcdInfo(),
-	}
+func Init(configFile string) {
+	conf.Parse(configFile, configInfo)
 }

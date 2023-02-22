@@ -13,7 +13,7 @@ type config struct {
 	RedisConfig    conf.RedisConfig    `mapstructure:"redis"`
 	ServerConfig   conf.ServerConfig   `mapstructure:"server"`
 	ServiceConfig  ServiceConfig       `mapstructure:"services"`
-	EtcdConfig     EtcdConfig          `mapstructure:"etcd"`
+	EtcdConfig     conf.EtcdConfig     `mapstructure:"etcd"`
 }
 
 func Config() *config {
