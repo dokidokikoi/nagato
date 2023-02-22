@@ -1,6 +1,7 @@
 package heartbeat
 
 import (
+	"fmt"
 	"math/rand"
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
@@ -23,7 +24,7 @@ func ListenHeartbeat() {
 
 	go removeExpireDataServer()
 	for msg := range c {
-		// fmt.Println("---------------got message--------------")
+		fmt.Println("---------------got message--------------")
 		dataServer, e := strconv.Unquote(string(msg.Body))
 		if e != nil {
 			panic(e)

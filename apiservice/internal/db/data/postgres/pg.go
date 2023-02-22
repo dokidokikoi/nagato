@@ -13,7 +13,7 @@ import (
 )
 
 type Store struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
 func (d *Store) Blanks() *blanks {
@@ -52,9 +52,13 @@ func (d *Store) Users() *users {
 	return newUsers(d)
 }
 
+func (d *Store) Transaction() *transaction {
+	return newTransaction(d)
+}
+
 func GetPGFactory() (*Store, error) {
 	db, err := gorm.Open(postgres.Open(config.Config().PGConfig.Dns()), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Warn),
 	})
 	if err != nil {
 		return nil, err
@@ -76,7 +80,7 @@ func GetPGFactory() (*Store, error) {
 		fmt.Println(err)
 	}
 
-	return &Store{DB: db}, nil
+	return &Store{db: db}, nil
 }
 
 // cleanDatabase tear downs the database tables.

@@ -11,5 +11,5 @@ type installs struct {
 }
 
 func newInstalls(d *Store) *installs {
-	return &installs{db.PgModel[model.Install]{DB: d.DB}}
+	return &installs{db.PgModel[model.Install]{DB: d.db}}
 }

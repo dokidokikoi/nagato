@@ -1,19 +1,14 @@
 package controller
 
-import "nagato/apiservice/internal/service"
+import (
+	"nagato/apiservice/internal/model"
 
-type IController interface {
-	Matter() *MatterController
+	"github.com/gin-gonic/gin"
+)
+
+type Controller struct {
 }
 
-type controller struct {
-	service service.IService
-}
-
-func (c controller) Matter() *MatterController {
-	return newMatterController(c.service)
-}
-
-func NewController() IController {
-	return &controller{service: service.NewService()}
+func (c Controller) GetCurrentUser(ctx *gin.Context) *model.User {
+	return ctx.MustGet("current_user").(*model.User)
 }

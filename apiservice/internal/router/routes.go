@@ -1,20 +1,33 @@
 package router
 
 import (
-	"nagato/apiservice/internal/controller"
+	"nagato/apiservice/internal/controller/matter"
+	"nagato/apiservice/internal/controller/user"
+	"nagato/apiservice/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func InitRoutes(r *gin.Engine) {
-	control := controller.NewController()
-	fileR := r.Group("/file")
+	apiR := r.Group("/api")
+
+	userController := user.NewUserController()
+	apiR.POST("/login", userController.Login)
+	apiR.POST("/register", userController.Register)
+
+	apiR.Use(middleware.Auth())
+	fileR := apiR.Group("/file")
 	{
-		fileController := control.Matter()
+		fileController := matter.NewMatterController()
 		fileR.GET("/locate/:hash", fileController.Locate)
 		fileR.PUT("/:name", fileController.UploadMatter)
 		fileR.GET("/:name", fileController.DownloadMatter)
-		fileR.DELETE("/:name", fileController.DelMatter)
-		fileR.GET("/versions/:name", fileController.VersionList)
+		fileR.DELETE("/:id", fileController.DelMatter)
+		// fileR.GET("/user/:id", fileController.UserMatterList)
 	}
+
+	// userR := r.Group("/user")
+	// {
+
+	// }
 }

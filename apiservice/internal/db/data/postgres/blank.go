@@ -11,5 +11,5 @@ type blanks struct {
 }
 
 func newBlanks(d *Store) *blanks {
-	return &blanks{db.PgModel[model.Blank]{DB: d.DB}}
+	return &blanks{db.PgModel[model.Blank]{DB: d.db}}
 }

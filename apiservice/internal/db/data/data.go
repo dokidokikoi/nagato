@@ -59,6 +59,10 @@ func (d dataCenter) Users() db.IUserStore {
 	return d.pg.Users()
 }
 
+func (d *dataCenter) Transaction() db.ITransaction {
+	return newTransaction(d)
+}
+
 func GetStoreDBFactory() (db.Store, error) {
 	once.Do(func() {
 		pg, err := postgres.GetPGFactory()

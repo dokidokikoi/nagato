@@ -11,5 +11,5 @@ type tags struct {
 }
 
 func newTags(d *Store) *tags {
-	return &tags{db.PgModel[model.Tag]{DB: d.DB}}
+	return &tags{db.PgModel[model.Tag]{DB: d.db}}
 }

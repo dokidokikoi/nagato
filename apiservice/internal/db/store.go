@@ -13,6 +13,7 @@ type Store interface {
 	SmallFileCaches() ISmallFileCacheStore
 	Tags() ITagStore
 	Users() IUserStore
+	Transaction() ITransaction
 }
 
 var storePointer Store

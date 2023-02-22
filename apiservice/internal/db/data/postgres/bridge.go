@@ -11,5 +11,5 @@ type bridges struct {
 }
 
 func newBridges(d *Store) *bridges {
-	return &bridges{db.PgModel[model.Bridge]{DB: d.DB}}
+	return &bridges{db.PgModel[model.Bridge]{DB: d.db}}
 }

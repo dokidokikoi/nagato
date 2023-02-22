@@ -11,5 +11,5 @@ type users struct {
 }
 
 func newUsers(d *Store) *users {
-	return &users{db.PgModel[model.User]{DB: d.DB}}
+	return &users{db.PgModel[model.User]{DB: d.db}}
 }

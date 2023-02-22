@@ -7,12 +7,20 @@ import (
 	"io"
 	"nagato/apiservice/internal/heartbeat"
 	"nagato/apiservice/internal/locate"
+	"nagato/apiservice/internal/model"
 	"nagato/apiservice/stream"
 	"nagato/common/tools"
+
+	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
-func (s matterSrv) Upload(ctx context.Context, hash string, size int64, data io.Reader) error {
+func (s matterSrv) Upload(ctx context.Context, example *model.Matter, hash string, size int64, data io.Reader) error {
 	if locate.Exist(hash) {
+		_, err := s.Get(ctx, &model.Matter{Sha256: hash}, &meta.GetOption{Include: []string{"sha256"}})
+		if err != nil {
+			err = s.Create(ctx, example)
+			return err
+		}
 		return nil
 	}
 
@@ -40,5 +48,5 @@ func (s matterSrv) Upload(ctx context.Context, hash string, size int64, data io.
 
 	tempPutStream.Commit(true)
 
-	return nil
+	return s.Create(ctx, example)
 }

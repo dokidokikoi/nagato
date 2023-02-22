@@ -11,5 +11,5 @@ type shares struct {
 }
 
 func newShares(d *Store) *shares {
-	return &shares{db.PgModel[model.Share]{DB: d.DB}}
+	return &shares{db.PgModel[model.Share]{DB: d.db}}
 }

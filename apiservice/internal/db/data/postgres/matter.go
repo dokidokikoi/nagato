@@ -11,5 +11,5 @@ type matters struct {
 }
 
 func newMatters(d *Store) *matters {
-	return &matters{db.PgModel[model.Matter]{DB: d.DB}}
+	return &matters{db.PgModel[model.Matter]{DB: d.db}}
 }

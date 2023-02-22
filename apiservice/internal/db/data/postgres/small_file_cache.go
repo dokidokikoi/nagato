@@ -11,5 +11,5 @@ type smallFileCaches struct {
 }
 
 func newSmallFileCaches(d *Store) *smallFileCaches {
-	return &smallFileCaches{db.PgModel[model.SmallFileCache]{DB: d.DB}}
+	return &smallFileCaches{db.PgModel[model.SmallFileCache]{DB: d.db}}
 }
