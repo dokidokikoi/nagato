@@ -6,7 +6,7 @@ import (
 )
 
 func Init() {
-	config.Init("./application.yml")
+	config.Init("./internal/conf/application.yml")
 
 	data.GetDataCenter()
 }

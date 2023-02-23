@@ -21,7 +21,7 @@ func InitRoutes(r *gin.Engine) {
 		fileController := matter.NewMatterController()
 		fileR.GET("/locate/:hash", fileController.Locate)
 		fileR.PUT("/:name", fileController.UploadMatter)
-		fileR.GET("/:name", fileController.DownloadMatter)
+		fileR.GET("/:uuid", fileController.DownloadMatter)
 		fileR.DELETE("/:id", fileController.DelMatter)
 		// fileR.GET("/user/:id", fileController.UserMatterList)
 	}

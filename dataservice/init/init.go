@@ -10,7 +10,7 @@ import (
 )
 
 func Init(r *gin.Engine) {
-	config.Init("./application.yml")
+	config.Init("./internal/conf/application.yml")
 
 	go heartbeat.StartHeartbeat()
 	go locate.StartLocate()

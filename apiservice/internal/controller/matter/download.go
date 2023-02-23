@@ -3,44 +3,32 @@ package matter
 import (
 	"io"
 	"nagato/apiservice/internal/model"
-	"net/http"
-	"strconv"
+	commonErrors "nagato/common/errors"
 	"time"
 
+	"github.com/dokidokikoi/go-common/core"
+	myErrors "github.com/dokidokikoi/go-common/errors"
 	"github.com/dokidokikoi/go-common/log/zap"
 	"github.com/gin-gonic/gin"
 )
 
 func (c MatterController) DownloadMatter(ctx *gin.Context) {
-	name := ctx.Param("name")
-	version, err := strconv.Atoi(ctx.Query("version"))
+	uuid := ctx.Param("uuid")
+
+	matter, err := c.service.Matter().Get(ctx, &model.Matter{UUID: uuid}, nil)
 	if err != nil {
-		zap.L().Sugar().Errorf("文件版本号必须为整型, name: %s, verion: %s", name, version)
-		ctx.JSON(http.StatusBadRequest, "version字段为数字")
+		zap.L().Sugar().Errorf("文件不存在: uuid: %s, err: %s", uuid, err.Error())
+		core.WriteResponse(ctx, commonErrors.ApiErrFileNotFound, nil)
 		return
 	}
-
-	meta, err := c.service.Matter().GetResourceMate(ctx, name, version)
+	r, err := c.service.Matter().Download(ctx, matter.Sha256)
 	if err != nil {
-		zap.L().Sugar().Errorf("获取文件元信息失败, name: %s, version: %s, err: %s", name, version, err.Error())
-		ctx.JSON(http.StatusInternalServerError, "")
+		zap.L().Sugar().Errorf("下载文件失败: path: %s, hash: %s, err: %s", matter.Path, matter.Sha256, err.Error())
+		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
 		return
 	}
 
-	if meta.Sha256 == "" {
-		zap.L().Sugar().Errorf("文件不存在, name: %s, version: %s", name, version)
-		ctx.JSON(http.StatusNotFound, "文件不存在")
-		return
-	}
-
-	r, err := c.service.Matter().Download(ctx, meta.Sha256)
-	if err != nil {
-		zap.L().Sugar().Errorf("下载文件失败, name: %s, hash: %s, version: %s, err: %s", name, meta.Sha256, version, err.Error())
-		ctx.JSON(http.StatusInternalServerError, "")
-		return
-	}
-
-	c.service.Matter().Update(ctx, &model.Matter{ID: meta.ID, Times: meta.Times + 1, VisitTime: time.Now()})
+	c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
 
 	io.Copy(ctx.Writer, r)
 }
