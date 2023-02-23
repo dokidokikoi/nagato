@@ -8,6 +8,7 @@ import (
 	"github.com/dokidokikoi/go-common/core"
 	"github.com/dokidokikoi/go-common/crypto"
 	myErrors "github.com/dokidokikoi/go-common/errors"
+	myJwt "github.com/dokidokikoi/go-common/jwt"
 	zaplog "github.com/dokidokikoi/go-common/log/zap"
 	meta "github.com/dokidokikoi/go-common/meta/option"
 	"github.com/gin-gonic/gin"
@@ -37,7 +38,7 @@ func (c UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	token, err := GenerateToken(user.Email)
+	token, err := GenerateToken(user)
 	if err != nil {
 		zaplog.L().Error("获取jwt token失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
@@ -47,18 +48,21 @@ func (c UserController) Login(ctx *gin.Context) {
 	core.WriteResponse(ctx, nil, gin.H{"token": token})
 }
 
-func GenerateToken(subject string) (string, error) {
+func GenerateToken(user *model.User) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(60 * 60 * 24 * time.Second)
 	issuer := "harukaze"
-	claims := jwt.StandardClaims{
-		ExpiresAt: expireTime.Unix(),
-		IssuedAt:  nowTime.Unix(),
-		NotBefore: nowTime.Unix(),
-		Issuer:    issuer,
-		Subject:   subject,
+	claims := myJwt.CustomClaims{
+		ID:    user.ID,
+		Emial: user.Email,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expireTime.Unix(),
+			IssuedAt:  nowTime.Unix(),
+			NotBefore: nowTime.Unix(),
+			Issuer:    issuer,
+		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte("harukaze"))
+	token, err := myJwt.GenerateToken(claims, "test")
 	return token, err
 }

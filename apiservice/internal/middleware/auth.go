@@ -1,25 +1,24 @@
 package middleware
 
 import (
+	"errors"
 	"nagato/apiservice/internal/db/data"
 	"nagato/apiservice/internal/model"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/dokidokikoi/go-common/core"
 	myErrors "github.com/dokidokikoi/go-common/errors"
+	myJwt "github.com/dokidokikoi/go-common/jwt"
 	"github.com/gin-gonic/gin"
 )
 
 func Auth() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		tokenString := ctx.Request.Header.Get("Authorization")
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return []byte("harukaze"), nil
-		})
+		claims, err := myJwt.VerifyToken(tokenString, "test")
 
 		if err != nil {
 			ctx.Abort()
-			if err.(*jwt.ValidationError).Errors == jwt.ValidationErrorExpired {
+			if errors.Is(err, myErrors.ErrTokenExpired) {
 				core.WriteResponse(ctx, myErrors.ApiErrTokenExpired, nil)
 				return
 			}
@@ -27,13 +26,12 @@ func Auth() func(ctx *gin.Context) {
 			return
 		}
 
-		claims := token.Claims.(jwt.MapClaims)
 		store, err := data.GetStoreDBFactory()
 		if err != nil {
 			ctx.Abort()
 			return
 		}
-		user, err := store.Users().Get(ctx, &model.User{Email: claims["sub"].(string)}, nil)
+		user, err := store.Users().Get(ctx, &model.User{Email: claims.Emial}, nil)
 		if err != nil {
 			ctx.Abort()
 			return

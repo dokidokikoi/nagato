@@ -1,4 +1,4 @@
-package server
+package client
 
 import (
 	"context"
@@ -100,7 +100,7 @@ func (s *SearchService) SearchDoc(ctx context.Context, index, body string) ([]by
 	return resp.Doc, nil
 }
 
-func init() {
+func initSearchClient() {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints: []string{config.Config().EtcdConfig.Address()},
 	})

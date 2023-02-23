@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"nagato/apiservice/internal/model"
-	"nagato/apiservice/rpc/server"
+	"nagato/apiservice/rpc/client"
 	"nagato/common/es"
 	"strings"
 )
@@ -20,12 +20,12 @@ func (s matterSrv) CreateResource(ctx context.Context, example *model.Matter) er
 		return err
 	}
 
-	err = server.SearchSrv.CreateDocByID(ctx, INDEX_RESOURCE, fmt.Sprintf("%d", example.ID), body.String())
+	err = client.SearchSrv.CreateDocByID(ctx, INDEX_RESOURCE, fmt.Sprintf("%d", example.ID), body.String())
 	return err
 }
 
 func (s matterSrv) GetResourceMate(ctx context.Context, name string, version int) (*model.Matter, error) {
-	resBytes, err := server.SearchSrv.GetDoc(ctx, INDEX_RESOURCE, fmt.Sprintf("%s_%d", name, version))
+	resBytes, err := client.SearchSrv.GetDoc(ctx, INDEX_RESOURCE, fmt.Sprintf("%s_%d", name, version))
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (s matterSrv) SearchResourceAllVersion(ctx context.Context, name string, fr
 	} else {
 		doc = strings.Replace(doc, "?", `{"match_all":{}}`, 1)
 	}
-	searchBytes, err := server.SearchSrv.SearchDoc(ctx, INDEX_RESOURCE, doc)
+	searchBytes, err := client.SearchSrv.SearchDoc(ctx, INDEX_RESOURCE, doc)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (s matterSrv) SearchResourceAllVersion(ctx context.Context, name string, fr
 
 func (s matterSrv) SearchLatestVersion(ctx context.Context, name string) (*model.Matter, error) {
 	doc := fmt.Sprintf(`{"query":{"match":{"name":"%s"}},"sort": [{"version":{"order":"desc"}}],"from":0,"size":1}`, name)
-	searchBytes, err := server.SearchSrv.SearchDoc(ctx, INDEX_RESOURCE, doc)
+	searchBytes, err := client.SearchSrv.SearchDoc(ctx, INDEX_RESOURCE, doc)
 	if err != nil {
 		return nil, err
 	}
