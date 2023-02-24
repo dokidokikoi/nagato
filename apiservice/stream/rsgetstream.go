@@ -19,6 +19,23 @@ func (s *RSGetStream) Close() {
 	}
 }
 
+func (s *RSGetStream) Seek(offset uint, whence int) (uint, error) {
+	if whence != io.SeekCurrent {
+		panic("only support SeekCurrent")
+	}
+	for offset != 0 {
+		length := uint(BLOCK_SIZE)
+		if offset < length {
+			length = offset
+		}
+		buf := make([]byte, length)
+		io.ReadFull(s, buf)
+		offset -= length
+	}
+
+	return offset, nil
+}
+
 func NewRSGetStream(locateInfo map[int]string, dataServers []string, hash string, size uint) (*RSGetStream, error) {
 	if len(locateInfo)+len(dataServers) != ALL_SHARDS {
 		return nil, fmt.Errorf("dataServers number mismatch")

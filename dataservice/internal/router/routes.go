@@ -17,6 +17,8 @@ func InitRoutes(r *gin.Engine) {
 		fileR.PATCH("/temp/:uuid", fileController.SaveMatterTemp)
 		fileR.PUT("/temp/:uuid", fileController.CommitMatter)
 		fileR.DELETE("/temp/:uuid", fileController.DelMatterTemp)
+		fileR.GET("/temp/:uuid", fileController.GetMatterTemp)
+		fileR.HEAD("/temp/:uuid", fileController.HeadMatterTemp)
 
 		fileR.GET("/:hash", fileController.GetMatter)
 	}

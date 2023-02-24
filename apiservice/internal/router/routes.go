@@ -23,6 +23,10 @@ func InitRoutes(r *gin.Engine) {
 		fileR.PUT("/:name", fileController.UploadMatter)
 		fileR.GET("/:uuid", fileController.DownloadMatter)
 		fileR.DELETE("/:id", fileController.DelMatter)
+
+		fileR.POST("/:name", fileController.GenUploadToken)
+		fileR.HEAD("/temp/:token", fileController.Head)
+		fileR.PUT("/temp/:token", fileController.UploadBigMatter)
 		// fileR.GET("/user/:id", fileController.UserMatterList)
 	}
 

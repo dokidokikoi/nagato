@@ -11,8 +11,10 @@ import (
 )
 
 type IMatterService interface {
-	Upload(ctx context.Context, example *model.Matter, hash string, size uint, data io.Reader) error
+	Upload(ctx context.Context, example *model.Matter, data io.Reader) error
 	Download(ctx context.Context, hash string, size uint) (*stream.RSGetStream, error)
+	GenUploadToken(ctx context.Context, example *model.Matter) (string, error)
+	UploadBigMatter(ctx context.Context, token string, offset uint, data io.Reader) error
 
 	Create(ctx context.Context, example *model.Matter) error
 	Update(ctx context.Context, example *model.Matter) error

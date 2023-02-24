@@ -5,6 +5,7 @@ import (
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
 	"nagato/common/types"
+	"net/url"
 	"time"
 )
 
@@ -39,5 +40,5 @@ func Locate(name string) map[int]string {
 }
 
 func Exist(name string) bool {
-	return len(Locate(name)) >= 3
+	return len(Locate(url.PathEscape(name))) >= 3
 }

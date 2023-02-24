@@ -1,9 +1,12 @@
 package matter
 
 import (
+	"fmt"
 	"io"
 	"nagato/apiservice/internal/model"
 	commonErrors "nagato/common/errors"
+	"nagato/common/tools"
+	"net/http"
 	"time"
 
 	"github.com/dokidokikoi/go-common/core"
@@ -31,6 +34,13 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 	// 修复的过程也使用数据服务的 temp 接口,
 	// RSGetStream 的 Close 方法用于在流关闭时将临时对象转正
 	defer r.Close()
+
+	offset := tools.GetOffsetFromHeader(ctx.Request.Header)
+	if offset != 0 {
+		r.Seek(offset, io.SeekCurrent)
+		ctx.Writer.Header().Set("content-range", fmt.Sprintf("bytes %d-%d/%d", offset, matter.Size-1, matter.Size))
+		ctx.Writer.WriteHeader(http.StatusPartialContent)
+	}
 
 	c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
 

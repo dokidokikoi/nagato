@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // 计算数据散列值并返回
@@ -40,4 +41,17 @@ func GetSizeFromHeader(h http.Header) uint {
 // 每个分片的大小,size/DATA_SHARDS 再向上取整
 func CalculatePerShard(a, b uint) uint {
 	return (a + b - 1) / b
+}
+
+func GetOffsetFromHeader(h http.Header) uint {
+	byteRange := h.Get("range")
+	if len(byteRange) < 7 {
+		return 0
+	}
+	if byteRange[:6] != "bytes=" {
+		return 0
+	}
+	bytePos := strings.Split(byteRange[6:], "-")
+	offset, _ := strconv.ParseUint(bytePos[0], 0, 32)
+	return uint(offset)
 }

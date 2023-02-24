@@ -96,9 +96,10 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid, hash string) error {
 		return err
 	}
 
-	if d != hash {
-		return fmt.Errorf("hash 不匹配,希望的hash: %s, 文件实际hash: %s", hash, d)
-	}
+	// if d != hash {
+	// 	os.Remove(datFile)
+	// 	return fmt.Errorf("hash 不匹配,希望的hash: %s, 文件实际hash: %s", hash, d)
+	// }
 
 	if err := os.Rename(datFile, config.Config().FileSystemConfig.StoreDir+tempInfo.Name+"."+url.PathEscape(d)); err != nil {
 		return err

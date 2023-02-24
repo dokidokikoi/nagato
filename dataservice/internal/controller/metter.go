@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"fmt"
 	"io"
 	"nagato/common/tools"
+	"nagato/dataservice/internal/config"
 	"nagato/dataservice/internal/service"
 	"net/http"
 	"os"
@@ -94,6 +96,37 @@ func (c MatterController) GetMatter(ctx *gin.Context) {
 	}
 	defer f.Close()
 	io.Copy(ctx.Writer, f)
+}
+
+func (c MatterController) GetMatterTemp(ctx *gin.Context) {
+	uuid := ctx.Param("uuid")
+	f, err := os.Open(config.Config().FileSystemConfig.TempDir + uuid + ".dat")
+	if err != nil {
+		zaplog.L().Error("打开文件错误", zap.Error(err))
+		ctx.Writer.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+	io.Copy(ctx.Writer, f)
+}
+
+func (c MatterController) HeadMatterTemp(ctx *gin.Context) {
+	uuid := ctx.Param("uuid")
+	f, err := os.Open(config.Config().FileSystemConfig.TempDir + uuid + ".dat")
+	if err != nil {
+		zaplog.L().Error("打开文件错误", zap.Error(err))
+		ctx.Writer.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		zaplog.L().Error("获取文件信息错误", zap.Error(err))
+		ctx.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	ctx.Writer.Header().Set("content-length", fmt.Sprintf("%d", info.Size()))
 }
 
 func newMatterController(srv service.IService) *MatterController {
