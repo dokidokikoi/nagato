@@ -7,8 +7,10 @@ import (
 )
 
 func InitRoutes(r *gin.Engine) {
+	dataR := r.Group("/data")
+
 	control := controller.NewController()
-	fileR := r.Group("/file")
+	fileR := dataR.Group("/file")
 	{
 		fileController := control.Matter()
 		fileR.POST("/temp/:name", fileController.CreateMatterTemp)

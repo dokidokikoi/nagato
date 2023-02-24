@@ -31,8 +31,13 @@ func GetHashFromHeader(h http.Header) string {
 	return digest[8:]
 }
 
-func GetSizeFromHeader(h http.Header) int64 {
-	size, _ := strconv.ParseInt(h.Get("content-length"), 0, 64)
+func GetSizeFromHeader(h http.Header) uint {
+	size, _ := strconv.ParseInt(h.Get("content-length"), 0, 32)
 
-	return size
+	return uint(size)
+}
+
+// 每个分片的大小,size/DATA_SHARDS 再向上取整
+func CalculatePerShard(a, b uint) uint {
+	return (a + b - 1) / b
 }

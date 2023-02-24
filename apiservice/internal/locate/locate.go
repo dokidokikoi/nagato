@@ -1,13 +1,19 @@
 package locate
 
 import (
+	"encoding/json"
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
-	"strconv"
+	"nagato/common/types"
 	"time"
 )
 
-func Locate(name string) string {
+type LocateMessage struct {
+	Addr string
+	Id   int
+}
+
+func Locate(name string) map[int]string {
 	q := rabbitmq.New(config.Config().RabbitMqConfig.Dns())
 	q.Publish("dataServers", name)
 	c := q.Consume()
@@ -18,12 +24,20 @@ func Locate(name string) string {
 		q.Close()
 	}()
 
-	msg := <-c
-	s, _ := strconv.Unquote(string(msg.Body))
+	locateInfo := make(map[int]string)
+	for i := 0; i < 4; i++ {
+		msg := <-c
+		if len(msg.Body) == 0 {
+			return locateInfo
+		}
+		var info types.LocateMessage
+		json.Unmarshal(msg.Body, &info)
+		locateInfo[info.Id] = info.Addr
+	}
 
-	return s
+	return locateInfo
 }
 
 func Exist(name string) bool {
-	return Locate(name) != ""
+	return len(Locate(name)) >= 3
 }

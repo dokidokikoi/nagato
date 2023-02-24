@@ -1,6 +1,9 @@
 package config
 
 import (
+	"flag"
+	"fmt"
+
 	conf "github.com/dokidokikoi/go-common/config"
 	"github.com/spf13/viper"
 )
@@ -25,5 +28,10 @@ func GetSpecConfig(key string) *viper.Viper {
 }
 
 func Init(configFile string) {
+	flag.StringVar(&configInfo.ServerConfig.Host, "h", "", "服务host")
+	flag.IntVar(&configInfo.ServerConfig.Port, "p", 10000, "服务port")
+	flag.Parse()
+
 	conf.Parse(configFile, configInfo)
+	fmt.Printf("config: %+v", configInfo.ServerConfig)
 }

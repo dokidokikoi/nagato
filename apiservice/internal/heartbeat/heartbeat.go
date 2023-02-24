@@ -1,7 +1,6 @@
 package heartbeat
 
 import (
-	"fmt"
 	"math/rand"
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
@@ -24,7 +23,7 @@ func ListenHeartbeat() {
 
 	go removeExpireDataServer()
 	for msg := range c {
-		fmt.Println("---------------got message--------------")
+		// fmt.Println("---------------got message--------------")
 		dataServer, e := strconv.Unquote(string(msg.Body))
 		if e != nil {
 			panic(e)
@@ -53,7 +52,7 @@ func GetDataServers() []string {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	ds := make([]string, len(dataServers))
+	ds := make([]string, 0)
 	for k := range dataServers {
 		ds = append(ds, k)
 	}
@@ -61,12 +60,31 @@ func GetDataServers() []string {
 	return ds
 }
 
-func ChooseRandomDataServer() string {
-	ds := GetDataServers()
-	n := len(ds)
-	if n == 0 {
-		return ""
+func ChooseRandomDataServers(n int, exclude map[int]string) []string {
+	candidates := make([]string, 0)
+	reverseExcludeMap := make(map[string]int)
+	for id, addr := range exclude {
+		reverseExcludeMap[addr] = id
+	}
+	servers := GetDataServers()
+	for i := range servers {
+		s := servers[i]
+		_, excluded := reverseExcludeMap[s]
+		if !excluded {
+			candidates = append(candidates, s)
+		}
 	}
 
-	return ds[rand.Intn(n)]
+	length := len(candidates)
+	if length < n {
+		return candidates
+	}
+
+	ds := make([]string, n)
+	p := rand.Perm(length)
+	for i := 0; i < n; i++ {
+		ds[i] = candidates[p[i]]
+	}
+
+	return ds
 }

@@ -1,6 +1,9 @@
 package config
 
 import (
+	"flag"
+	"fmt"
+
 	conf "github.com/dokidokikoi/go-common/config"
 	"github.com/spf13/viper"
 )
@@ -22,5 +25,14 @@ func GetSpecConfig(key string) *viper.Viper {
 }
 
 func Init(configFile string) {
+	flag.StringVar(&configInfo.ServerConfig.Host, "h", "", "服务host")
+	flag.IntVar(&configInfo.ServerConfig.Port, "p", 10100, "服务port")
+
+	flag.StringVar(&configInfo.FileSystemConfig.StoreDir, "store", "/tmp/objects/", "文件存储目录")
+	flag.StringVar(&configInfo.FileSystemConfig.TempDir, "temp", "/tmp/temp/", "临时文件存储目录")
+	flag.Parse()
+
 	conf.Parse(configFile, configInfo)
+
+	fmt.Printf("fileSystem: %+v", configInfo.FileSystemConfig)
 }

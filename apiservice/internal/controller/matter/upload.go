@@ -62,7 +62,7 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 		UserID: c.GetCurrentUser(ctx).ID,
 		Name:   strings.ReplaceAll(name, "."+ext, ""),
 		Sha256: hash,
-		Size:   uint(size),
+		Size:   size,
 		Ext:    ext,
 		Path:   "/" + name,
 	}
@@ -76,6 +76,7 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 
 	matter, err := c.service.Matter().Get(ctx, &model.Matter{Path: createMatter.Path}, &meta.GetOption{Include: []string{"path"}})
 	if err != nil {
+		zap.L().Sugar().Errorf("获取文件数据库信息失败, name: %s, path: %s, err: %s", matter.Name, matter.Sha256, err.Error())
 		core.WriteResponse(ctx, myErrors.ApiErrRecordNotFound, nil)
 		return
 	}

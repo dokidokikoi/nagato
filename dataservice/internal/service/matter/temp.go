@@ -2,43 +2,28 @@ package matter
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"nagato/common/tools"
 	"nagato/dataservice/internal/config"
 	"nagato/dataservice/internal/locate"
+	"nagato/dataservice/internal/model"
+	"net/url"
 	"os"
 )
 
-type tempInfo struct {
-	Uuid string
-	Name string
-	Size int64
-}
-
-func (t *tempInfo) writeToFile() error {
-	f, e := os.Create(config.Config().FileSystemConfig.TempDir + t.Uuid)
-	if e != nil {
-		return e
-	}
-	defer f.Close()
-
-	b, _ := json.Marshal(t)
-	f.Write(b)
-	return nil
-}
-
 // 将临时文件的信息存储到临时目录并创建出临时文件的文件
 func (s matterSrv) CreateTempFile(ctx context.Context, name string, uuid string, size int64) error {
-	info := tempInfo{
+	info := model.TempInfo{
 		Uuid: uuid,
 		Name: name,
 		Size: size,
 	}
 
-	e := info.writeToFile()
-	if e != nil {
-		return e
+	err := info.WriteToFile()
+	if err != nil {
+		return err
 	}
 
 	// 创建出临时文件的文件
@@ -47,7 +32,7 @@ func (s matterSrv) CreateTempFile(ctx context.Context, name string, uuid string,
 }
 
 func (s matterSrv) WriteTempFile(ctx context.Context, uuid string, data io.Reader) error {
-	tempInfo, err := readFromTempFile(uuid)
+	tempInfo, err := model.ReadFromTempFile(uuid)
 	if err != nil {
 		return err
 	}
@@ -78,8 +63,8 @@ func (s matterSrv) WriteTempFile(ctx context.Context, uuid string, data io.Reade
 	return nil
 }
 
-func (s matterSrv) CommitMatter(ctx context.Context, uuid string) error {
-	tempInfo, err := readFromTempFile(uuid)
+func (s matterSrv) CommitMatter(ctx context.Context, uuid, hash string) error {
+	tempInfo, err := model.ReadFromTempFile(uuid)
 	if err != nil {
 		return err
 	}
@@ -106,8 +91,21 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid string) error {
 		return errors.New("文件大小不匹配")
 	}
 
-	os.Rename(datFile, config.Config().FileSystemConfig.StoreDir+tempInfo.Name)
-	locate.Add(tempInfo.Name)
+	d, err := tools.CalculateHash(f)
+	if err != nil {
+		return err
+	}
+
+	if d != hash {
+		return fmt.Errorf("hash 不匹配,希望的hash: %s, 文件实际hash: %s", hash, d)
+	}
+
+	if err := os.Rename(datFile, config.Config().FileSystemConfig.StoreDir+tempInfo.Name+"."+url.PathEscape(d)); err != nil {
+		return err
+	}
+	locate.Add(tempInfo.Hash(), tempInfo.ID())
+
+	fmt.Printf("fileName: %s, storeName: %s", datFile, config.Config().FileSystemConfig.StoreDir+tempInfo.Name+"."+url.PathEscape(d))
 
 	return nil
 }
@@ -118,19 +116,4 @@ func (c matterSrv) DelMatterTemp(ctx context.Context, uuid string) {
 	datFile := infoFile + ".dat"
 	os.Remove(infoFile)
 	os.Remove(datFile)
-}
-
-// 读取临时文件的信息文件
-func readFromTempFile(uuid string) (*tempInfo, error) {
-	f, err := os.Open(config.Config().FileSystemConfig.TempDir + uuid)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	b, _ := io.ReadAll(f)
-	var info tempInfo
-	json.Unmarshal(b, &info)
-
-	return &info, nil
 }

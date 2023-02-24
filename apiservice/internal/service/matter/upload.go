@@ -14,9 +14,9 @@ import (
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
-func (s matterSrv) Upload(ctx context.Context, example *model.Matter, hash string, size int64, data io.Reader) error {
+func (s matterSrv) Upload(ctx context.Context, example *model.Matter, hash string, size uint, data io.Reader) error {
 	if locate.Exist(hash) {
-		_, err := s.Get(ctx, &model.Matter{Sha256: hash}, &meta.GetOption{Include: []string{"sha256"}})
+		_, err := s.Get(ctx, &model.Matter{Path: example.Path}, &meta.GetOption{Include: []string{"sha256"}})
 		if err != nil {
 			err = s.Create(ctx, example)
 			return err
@@ -24,11 +24,12 @@ func (s matterSrv) Upload(ctx context.Context, example *model.Matter, hash strin
 		return nil
 	}
 
-	server := heartbeat.ChooseRandomDataServer()
-	if server == "" {
-		return fmt.Errorf("cannot find any dataServer")
+	servers := heartbeat.ChooseRandomDataServers(stream.ALL_SHARDS, nil)
+	if len(servers) < stream.ALL_SHARDS {
+		return fmt.Errorf("cannot find enough dataServer")
 	}
-	tempPutStream, err := stream.NewTempPutStream(server, hash, size)
+
+	tempPutStream, err := stream.NewRSPutStream(servers, hash, size)
 	if err != nil {
 		return err
 	}

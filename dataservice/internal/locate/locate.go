@@ -2,9 +2,11 @@ package locate
 
 import (
 	"nagato/common/rabbitmq"
+	"nagato/common/types"
 	"nagato/dataservice/internal/config"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -13,11 +15,15 @@ import (
 var matterHash = make(map[string]int)
 var mutex sync.Mutex
 
-func Locate(hash string) bool {
+func Locate(hash string) int {
 	mutex.Lock()
-	_, ok := matterHash[hash]
+	id, ok := matterHash[hash]
 	mutex.Unlock()
-	return ok
+	if !ok {
+		return -1
+	}
+
+	return id
 }
 
 func StartLocate() {
@@ -28,14 +34,13 @@ func StartLocate() {
 	c := q.Consume()
 
 	for msg := range c {
-		hash, e := strconv.Unquote(string(msg.Body))
-		if e != nil {
-			panic(e)
+		hash, err := strconv.Unquote(string(msg.Body))
+		if err != nil {
+			panic(err)
 		}
-
-		exist := Locate(hash)
-		if exist {
-			q.Send(msg.ReplyTo, config.Config().ServerConfig.Address())
+		id := Locate(hash)
+		if id != -1 {
+			q.Send(msg.ReplyTo, types.LocateMessage{Addr: config.Config().ServerConfig.Address(), Id: id})
 		}
 	}
 }
@@ -46,16 +51,24 @@ func CollectMatters() {
 
 	// 获取每个文件的文件名（散列值），加入缓存
 	for i := range files {
-		hash := filepath.Base(files[i])
-		matterHash[hash] = 1
+		file := strings.Split(filepath.Base(files[i]), ".")
+		if len(file) != 3 {
+			panic(files[i])
+		}
+		hash := file[0]
+		id, err := strconv.Atoi(file[1])
+		if err != nil {
+			panic(err)
+		}
+		matterHash[hash] = id
 	}
 }
 
 // 将用户上传的文件加入内存
-func Add(hash string) {
+func Add(hash string, id int) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	matterHash[hash] = 1
+	matterHash[hash] = id
 }
 
 // 将文件移出内存

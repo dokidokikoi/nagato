@@ -38,6 +38,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/klauspost/cpuid/v2 v2.1.1 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
@@ -74,6 +75,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/reedsolomon v1.11.7
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

@@ -10,28 +10,28 @@ type GetStream struct {
 	reader io.Reader
 }
 
-func (r *GetStream) Read(p []byte) (n int, err error) {
-	return r.reader.Read(p)
-}
-
 func newGetStream(url string) (*GetStream, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
+	r, e := http.Get(url)
+	if e != nil {
+		return nil, e
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("dataServer return http code %d", resp.StatusCode)
+	if r.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("dataServer return http code %d", r.StatusCode)
 	}
 
 	return &GetStream{
-		resp.Body,
+		r.Body,
 	}, nil
 }
 
-func NewGetStream(server, hash string) (*GetStream, error) {
-	if server == "" || hash == "" {
-		return nil, fmt.Errorf("invalid server %s matter %s", server, hash)
+func NewGetStream(server, object string) (*GetStream, error) {
+	if server == "" || object == "" {
+		return nil, fmt.Errorf("invalid server %s object %s", server, object)
 	}
 
-	return newGetStream("http://" + server + "/file/" + hash)
+	return newGetStream("http://" + server + "/data/file/" + object)
+}
+
+func (r *GetStream) Read(p []byte) (n int, err error) {
+	return r.reader.Read(p)
 }

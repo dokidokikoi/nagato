@@ -5,13 +5,14 @@ import (
 	"io"
 	"nagato/apiservice/internal/db"
 	"nagato/apiservice/internal/model"
+	"nagato/apiservice/stream"
 
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
 type IMatterService interface {
-	Upload(ctx context.Context, example *model.Matter, hash string, size int64, data io.Reader) error
-	Download(ctx context.Context, hash string) (io.Reader, error)
+	Upload(ctx context.Context, example *model.Matter, hash string, size uint, data io.Reader) error
+	Download(ctx context.Context, hash string, size uint) (*stream.RSGetStream, error)
 
 	Create(ctx context.Context, example *model.Matter) error
 	Update(ctx context.Context, example *model.Matter) error

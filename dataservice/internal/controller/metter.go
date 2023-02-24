@@ -2,6 +2,7 @@ package controller
 
 import (
 	"io"
+	"nagato/common/tools"
 	"nagato/dataservice/internal/service"
 	"net/http"
 	"os"
@@ -9,7 +10,9 @@ import (
 	"strconv"
 	"strings"
 
+	zaplog "github.com/dokidokikoi/go-common/log/zap"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type MatterController struct {
@@ -22,12 +25,14 @@ func (c MatterController) CreateMatterTemp(ctx *gin.Context) {
 
 	output, _ := exec.Command("uuidgen").Output()
 	uuid := strings.TrimSuffix(string(output), "\n")
-	size, e := strconv.ParseInt(ctx.Request.Header.Get("size"), 0, 64)
-	if e != nil {
+	size, err := strconv.ParseInt(ctx.Request.Header.Get("size"), 0, 64)
+	if err != nil {
+		zaplog.L().Error("创建临时文件信息出错", zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
 	if c.service.Matter().CreateTempFile(ctx, name, uuid, size) != nil {
+		zaplog.L().Error("创建临时文件信息出错", zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
@@ -40,6 +45,7 @@ func (c MatterController) SaveMatterTemp(ctx *gin.Context) {
 	uuid := ctx.Param("uuid")
 	err := c.service.Matter().WriteTempFile(ctx, uuid, ctx.Request.Body)
 	if err != nil {
+		zaplog.L().Error("创建临时文件出错", zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
@@ -48,8 +54,10 @@ func (c MatterController) SaveMatterTemp(ctx *gin.Context) {
 // 临时文件转正，转正后将临时文件删除
 func (c MatterController) CommitMatter(ctx *gin.Context) {
 	uuid := ctx.Param("uuid")
-	err := c.service.Matter().CommitMatter(ctx, uuid)
+	hash := tools.GetHashFromHeader(ctx.Request.Header)
+	err := c.service.Matter().CommitMatter(ctx, uuid, hash)
 	if err != nil {
+		zaplog.L().Error("转正临时文件出错", zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
@@ -67,12 +75,23 @@ func (c MatterController) GetMatter(ctx *gin.Context) {
 	hash := ctx.Param("hash")
 
 	if hash == "" {
+		zaplog.L().Error("hash不能为空")
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
 
-	path := c.service.Matter().GetFilePath(ctx, hash)
-	f, _ := os.Open(path)
+	path, err := c.service.Matter().GetFilePath(ctx, hash)
+	if err != nil {
+		zaplog.L().Sugar().Errorf("获取文件失败, err: %+v", err)
+		ctx.JSON(http.StatusNotFound, "")
+		return
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		zaplog.L().Sugar().Errorf("打开文件失败, err: %+v", err)
+		ctx.JSON(http.StatusNotFound, "")
+		return
+	}
 	defer f.Close()
 	io.Copy(ctx.Writer, f)
 }

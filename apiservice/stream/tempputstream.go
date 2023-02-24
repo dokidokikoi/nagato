@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -13,7 +14,7 @@ type TempPutStream struct {
 }
 
 func (t TempPutStream) Write(p []byte) (n int, err error) {
-	req, err := http.NewRequest("PATCH", "http://"+t.Server+"/file/temp/"+t.Uuid, strings.NewReader(string(p)))
+	req, err := http.NewRequest("PATCH", "http://"+t.Server+"/data/file/temp/"+t.Uuid, strings.NewReader(string(p)))
 	if err != nil {
 		return 0, err
 	}
@@ -30,20 +31,21 @@ func (t TempPutStream) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (t *TempPutStream) Commit(flag bool) {
+func (t *TempPutStream) Commit(flag bool, hash string) {
 	method := "DELETE"
 	if flag {
 		method = "PUT"
 	}
 
-	req, _ := http.NewRequest(method, "http://"+t.Server+"/file/temp/"+t.Uuid, nil)
+	req, _ := http.NewRequest(method, "http://"+t.Server+"/data/file/temp/"+t.Uuid, nil)
+	req.Header.Set("Digest", "SHA-256="+hash)
 	client := http.Client{}
 	client.Do(req)
 }
 
-func NewTempPutStream(server string, hash string, size int64) (*TempPutStream, error) {
+func NewTempPutStream(server string, hash string, size uint) (*TempPutStream, error) {
 	// 将文件信息存到临时目录下文件名为生成的uuid
-	req, err := http.NewRequest("POST", "http://"+server+"/file/temp/"+hash, nil)
+	req, err := http.NewRequest("POST", "http://"+server+"/data/file/temp/"+url.PathEscape(hash), nil)
 	if err != nil {
 		return nil, err
 	}
