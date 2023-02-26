@@ -17,5 +17,6 @@ func Init(r *gin.Engine) {
 	data.SetStoreDBFactory()
 	client.InitClients()
 
+	r.UseRawPath = true
 	router.InitRoutes(r)
 }

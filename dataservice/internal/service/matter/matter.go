@@ -6,7 +6,7 @@ import (
 )
 
 type IMatterService interface {
-	CreateTempFile(ctx context.Context, name string, uuid string, size int64) error
+	CreateTempFile(ctx context.Context, hashEncode string, uuid string, size int64) error
 	WriteTempFile(ctx context.Context, uuid string, data io.Reader) error
 	CommitMatter(ctx context.Context, uuid, hash string) error
 	DelMatterTemp(ctx context.Context, uuid string)

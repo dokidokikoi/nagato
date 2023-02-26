@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"nagato/common/tools"
+	"net/url"
 )
 
 type RSGetStream struct {
@@ -49,7 +50,7 @@ func NewRSGetStream(locateInfo map[int]string, dataServers []string, hash string
 			dataServers = dataServers[1:]
 			continue
 		}
-		reader, err := NewGetStream(server, fmt.Sprintf("%s.%d", hash, i))
+		reader, err := NewGetStream(server, fmt.Sprintf("%s.%d", url.PathEscape(hash), i))
 		if err == nil {
 			readers[i] = reader
 		}

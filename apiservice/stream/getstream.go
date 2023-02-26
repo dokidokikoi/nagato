@@ -24,12 +24,12 @@ func newGetStream(url string) (*GetStream, error) {
 	}, nil
 }
 
-func NewGetStream(server, object string) (*GetStream, error) {
-	if server == "" || object == "" {
-		return nil, fmt.Errorf("invalid server %s object %s", server, object)
+func NewGetStream(server, hashEncode string) (*GetStream, error) {
+	if server == "" || hashEncode == "" {
+		return nil, fmt.Errorf("invalid server %s object %s", server, hashEncode)
 	}
 
-	return newGetStream("http://" + server + "/data/file/" + object)
+	return newGetStream("http://" + server + "/data/file/" + hashEncode)
 }
 
 func (r *GetStream) Read(p []byte) (n int, err error) {

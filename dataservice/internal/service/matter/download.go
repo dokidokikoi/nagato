@@ -14,10 +14,11 @@ import (
 	zaplog "github.com/dokidokikoi/go-common/log/zap"
 )
 
-func (s matterSrv) GetFilePath(ctx context.Context, name string) (string, error) {
-	files, _ := filepath.Glob(config.Config().FileSystemConfig.StoreDir + name + ".*")
+func (s matterSrv) GetFilePath(ctx context.Context, hash string) (string, error) {
+	hashEncode := url.PathEscape(hash)
+	files, _ := filepath.Glob(config.Config().FileSystemConfig.StoreDir + hashEncode + ".*")
 	if len(files) != 1 {
-		return "", fmt.Errorf("数据丢失: %s", name)
+		return "", fmt.Errorf("数据丢失: %s", hashEncode)
 	}
 	file := files[0]
 	fileHash := strings.Split(file, ".")[2]
@@ -32,10 +33,10 @@ func (s matterSrv) GetFilePath(ctx context.Context, name string) (string, error)
 	h = url.PathEscape(h)
 	// 数据校验，因为可能由于硬件上的问题导致数据出错，例如数据降解
 	if h != fileHash {
-		zaplog.L().Sugar().Error("数据丢失: %s", name)
+		zaplog.L().Sugar().Error("数据丢失: %s", hashEncode)
 		locate.Del(fileHash)
 		os.Remove(file)
-		return "", fmt.Errorf("数据丢失: %s", name)
+		return "", fmt.Errorf("数据丢失: %s", hashEncode)
 	}
 
 	return file, nil

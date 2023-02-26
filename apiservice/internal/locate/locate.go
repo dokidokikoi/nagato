@@ -16,7 +16,7 @@ type LocateMessage struct {
 
 func Locate(name string) map[int]string {
 	q := rabbitmq.New(config.Config().RabbitMqConfig.Dns())
-	q.Publish("dataServers", name)
+	q.Publish("dataServers", url.PathEscape(name))
 	c := q.Consume()
 
 	// 一秒之后关闭消息队列

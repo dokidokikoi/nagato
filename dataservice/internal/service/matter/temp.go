@@ -14,10 +14,10 @@ import (
 )
 
 // 将临时文件的信息存储到临时目录并创建出临时文件的文件
-func (s matterSrv) CreateTempFile(ctx context.Context, name string, uuid string, size int64) error {
+func (s matterSrv) CreateTempFile(ctx context.Context, hashEncode string, uuid string, size int64) error {
 	info := model.TempInfo{
 		Uuid: uuid,
-		Name: name,
+		Name: hashEncode,
 		Size: size,
 	}
 
@@ -73,12 +73,16 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid, hash string) error {
 	datFile := infoFile + ".dat"
 	f, err := os.Open(datFile)
 	if err != nil {
+		os.Remove(infoFile)
+		os.Remove(datFile)
 		return err
 	}
 	defer f.Close()
 
 	info, err := f.Stat()
 	if err != nil {
+		os.Remove(infoFile)
+		os.Remove(datFile)
 		return err
 	}
 
@@ -93,6 +97,7 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid, hash string) error {
 
 	d, err := tools.CalculateHash(f)
 	if err != nil {
+		os.Remove(datFile)
 		return err
 	}
 
@@ -102,6 +107,7 @@ func (s matterSrv) CommitMatter(ctx context.Context, uuid, hash string) error {
 	// }
 
 	if err := os.Rename(datFile, config.Config().FileSystemConfig.StoreDir+tempInfo.Name+"."+url.PathEscape(d)); err != nil {
+		os.Remove(datFile)
 		return err
 	}
 	locate.Add(tempInfo.Hash(), tempInfo.ID())

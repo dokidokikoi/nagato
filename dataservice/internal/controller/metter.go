@@ -7,6 +7,7 @@ import (
 	"nagato/dataservice/internal/config"
 	"nagato/dataservice/internal/service"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
@@ -23,7 +24,7 @@ type MatterController struct {
 
 // 将临时文件的信息存储到临时目录并创建出临时文件的文件
 func (c MatterController) CreateMatterTemp(ctx *gin.Context) {
-	name := ctx.Param("name")
+	hashEncode := url.PathEscape(ctx.Param("name"))
 
 	output, _ := exec.Command("uuidgen").Output()
 	uuid := strings.TrimSuffix(string(output), "\n")
@@ -33,7 +34,7 @@ func (c MatterController) CreateMatterTemp(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
-	if c.service.Matter().CreateTempFile(ctx, name, uuid, size) != nil {
+	if c.service.Matter().CreateTempFile(ctx, hashEncode, uuid, size) != nil {
 		zaplog.L().Error("创建临时文件信息出错", zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, "")
 		return

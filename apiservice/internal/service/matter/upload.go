@@ -12,6 +12,7 @@ import (
 	"nagato/common/tools"
 	"net/url"
 
+	zaplog "github.com/dokidokikoi/go-common/log/zap"
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
@@ -49,6 +50,7 @@ func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Re
 	}
 
 	tempPutStream.Commit(true)
+	zaplog.L().Sugar().Info("上传文件: %s 成功, hash: %s", example.Path, example.Sha256)
 
 	return s.Create(ctx, example)
 }

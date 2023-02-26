@@ -15,5 +15,7 @@ func Init(r *gin.Engine) {
 	go heartbeat.StartHeartbeat()
 	go locate.StartLocate()
 	locate.CollectMatters()
+
+	r.UseRawPath = true
 	router.InitRoutes(r)
 }

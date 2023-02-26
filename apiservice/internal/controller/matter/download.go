@@ -44,5 +44,6 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 
 	c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
 
+	ctx.Writer.Header().Set("Content-Disposition", "attachment; filename="+matter.Name+"."+matter.Ext)
 	io.Copy(ctx.Writer, r)
 }

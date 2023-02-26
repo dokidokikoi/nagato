@@ -9,11 +9,13 @@ import (
 )
 
 type TempPutStream struct {
+	Total  uint
+	Size   uint
 	Server string
 	Uuid   string
 }
 
-func (t TempPutStream) Write(p []byte) (n int, err error) {
+func (t *TempPutStream) Write(p []byte) (n int, err error) {
 	req, err := http.NewRequest("PATCH", "http://"+t.Server+"/data/file/temp/"+t.Uuid, strings.NewReader(string(p)))
 	if err != nil {
 		return 0, err
@@ -27,6 +29,9 @@ func (t TempPutStream) Write(p []byte) (n int, err error) {
 	if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("dataServer return http code %d", resp.StatusCode)
 	}
+
+	t.Total += uint(len(p))
+	fmt.Printf("write: %d bytes, total: %d bytes, size: %d bytes\n", len(p), t.Total, t.Size)
 
 	return len(p), nil
 }
@@ -64,6 +69,7 @@ func NewTempPutStream(server string, hash string, size uint) (*TempPutStream, er
 	}
 
 	return &TempPutStream{
+		Size:   size,
 		Server: server,
 		Uuid:   string(uuid),
 	}, nil
