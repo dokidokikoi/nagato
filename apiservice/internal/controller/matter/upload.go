@@ -137,7 +137,7 @@ func (c MatterController) GenUploadToken(ctx *gin.Context) {
 	}
 
 	core.WriteResponse(ctx, nil, token)
-	ctx.Writer.WriteHeader(http.StatusCreated)
+	ctx.AbortWithStatus(http.StatusCreated)
 }
 
 func (c MatterController) UploadBigMatter(ctx *gin.Context) {

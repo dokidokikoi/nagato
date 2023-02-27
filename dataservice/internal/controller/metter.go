@@ -104,7 +104,7 @@ func (c MatterController) GetMatterTemp(ctx *gin.Context) {
 	f, err := os.Open(config.Config().FileSystemConfig.TempDir + uuid + ".dat")
 	if err != nil {
 		zaplog.L().Error("打开文件错误", zap.Error(err))
-		ctx.Writer.WriteHeader(http.StatusNotFound)
+		ctx.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 	defer f.Close()
@@ -116,7 +116,7 @@ func (c MatterController) HeadMatterTemp(ctx *gin.Context) {
 	f, err := os.Open(config.Config().FileSystemConfig.TempDir + uuid + ".dat")
 	if err != nil {
 		zaplog.L().Error("打开文件错误", zap.Error(err))
-		ctx.Writer.WriteHeader(http.StatusNotFound)
+		ctx.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 	defer f.Close()
@@ -124,7 +124,7 @@ func (c MatterController) HeadMatterTemp(ctx *gin.Context) {
 	info, err := f.Stat()
 	if err != nil {
 		zaplog.L().Error("获取文件信息错误", zap.Error(err))
-		ctx.Writer.WriteHeader(http.StatusInternalServerError)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	ctx.Writer.Header().Set("content-length", fmt.Sprintf("%d", info.Size()))

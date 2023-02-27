@@ -46,14 +46,12 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 		}
 		reader = io.LimitReader(r, end-start+1)
 		ctx.Writer.Header().Set("content-range", fmt.Sprintf("bytes %d-%d/%d", start, end, matter.Size))
-		ctx.Writer.WriteHeader(http.StatusPartialContent)
+		ctx.AbortWithStatus(http.StatusPartialContent)
 	} else {
 		reader = r
 	}
 
 	c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
-
-	ctx.Writer.Header().Set("Content-Disposition", "attachment; filename="+matter.Name+"."+matter.Ext)
 
 	io.Copy(ctx.Writer, reader)
 }
