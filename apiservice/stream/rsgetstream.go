@@ -20,12 +20,12 @@ func (s *RSGetStream) Close() {
 	}
 }
 
-func (s *RSGetStream) Seek(offset uint, whence int) (uint, error) {
+func (s *RSGetStream) Seek(offset int64, whence int) (int64, error) {
 	if whence != io.SeekCurrent {
 		panic("only support SeekCurrent")
 	}
 	for offset != 0 {
-		length := uint(BLOCK_SIZE)
+		length := int64(BLOCK_SIZE)
 		if offset < length {
 			length = offset
 		}

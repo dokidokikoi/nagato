@@ -35,15 +35,25 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 	// RSGetStream 的 Close 方法用于在流关闭时将临时对象转正
 	defer r.Close()
 
-	offset := tools.GetOffsetFromHeader(ctx.Request.Header)
-	if offset != 0 {
-		r.Seek(offset, io.SeekCurrent)
-		ctx.Writer.Header().Set("content-range", fmt.Sprintf("bytes %d-%d/%d", offset, matter.Size-1, matter.Size))
+	var reader io.Reader
+	start, end, err := tools.ParseRangeFromHeader(ctx.Request.Header)
+	if err == nil {
+		_, err := r.Seek(start, io.SeekCurrent)
+		if err != nil {
+			zap.L().Sugar().Errorf("下载文件失败, err: %s", err.Error())
+			core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
+			return
+		}
+		reader = io.LimitReader(r, end-start+1)
+		ctx.Writer.Header().Set("content-range", fmt.Sprintf("bytes %d-%d/%d", start, end, matter.Size))
 		ctx.Writer.WriteHeader(http.StatusPartialContent)
+	} else {
+		reader = r
 	}
 
 	c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
 
 	ctx.Writer.Header().Set("Content-Disposition", "attachment; filename="+matter.Name+"."+matter.Ext)
-	io.Copy(ctx.Writer, r)
+
+	io.Copy(ctx.Writer, reader)
 }
