@@ -10,14 +10,13 @@ import (
 	"nagato/apiservice/internal/model"
 	"nagato/apiservice/stream"
 	"nagato/common/tools"
-	"net/url"
 
 	zaplog "github.com/dokidokikoi/go-common/log/zap"
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
 func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Reader) error {
-	if locate.Exist(url.PathEscape(example.Sha256)) {
+	if locate.Exist(example.Sha256) {
 		_, err := s.Get(ctx, &model.Matter{Path: example.Path}, &meta.GetOption{Include: []string{"sha256"}})
 		if err != nil {
 			err = s.Create(ctx, example)
@@ -56,7 +55,7 @@ func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Re
 }
 
 func (s matterSrv) GenUploadToken(ctx context.Context, example *model.Matter) (string, error) {
-	if locate.Exist(url.PathEscape(example.Sha256)) {
+	if locate.Exist(example.Sha256) {
 		_, err := s.Get(ctx, &model.Matter{Path: example.Path}, &meta.GetOption{Include: []string{"sha256"}})
 		if err != nil {
 			err = s.Create(ctx, example)

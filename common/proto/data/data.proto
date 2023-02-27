@@ -1,0 +1,76 @@
+// 定义我们接口的版本
+syntax = "proto3";
+// 定义包名称
+package api;
+// 定义go安装包名称
+option go_package = "/;data";
+// 定义我们的服务
+service Data {
+    // 创建临时文件信息文件
+    rpc CreateTempInfo (CreateTempInfoReq) returns (CreateTempInfoResp);
+    // 上传临时文件
+    rpc UploadTempFile (stream UploadTempFileReq) returns (UploadTempFileResp);
+    // 转正或删除临时文件
+    rpc CommitTempFile (CommitTempFileReq) returns (CommitTempFileResp);
+    // 删除临时文件
+    rpc DeleteTempFile (CommonReq) returns (DeleteTempFileResp);
+    // 获取临时文件
+    rpc GetTempFile (CommonReq) returns (stream GetTempFileResp);
+    // 获取已上传临时文件的大小
+    rpc HeadTempFile (CommonReq) returns (HeadTempFileResp);
+
+    // 获取文件
+    rpc GetMatter (GetMatterReq) returns (stream GetMatterResp);
+}
+
+message CreateTempInfoReq {
+    string name = 1;
+    int64 size = 2;
+}
+
+message CreateTempInfoResp {
+    string uuid = 1;
+}
+
+message UploadTempFileReq {
+    string uuid = 1;
+    bytes data = 2;
+}
+
+message UploadTempFileResp {
+    int32 status = 1;
+}
+
+message CommitTempFileReq {
+    string uuid = 1;
+    string hash = 2;
+}
+
+message CommitTempFileResp {
+    int32 status = 1;
+}
+
+message CommonReq {
+    string uuid = 1;
+}
+
+message DeleteTempFileResp {
+    int32 status = 1;
+}
+
+message GetTempFileResp {
+    bytes data = 1;
+}
+
+message HeadTempFileResp {
+    int32 status = 1;
+    int64 contentLength = 2;
+}
+
+message GetMatterReq {
+    string namePrefix = 1;
+}
+
+message GetMatterResp {
+    bytes data = 1;
+}

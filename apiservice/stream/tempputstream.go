@@ -1,11 +1,12 @@
 package stream
 
 import (
+	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"strings"
+
+	dataRpc "nagato/apiservice/rpc/client/data"
 )
 
 type TempPutStream struct {
@@ -16,18 +17,13 @@ type TempPutStream struct {
 }
 
 func (t *TempPutStream) Write(p []byte) (n int, err error) {
-	req, err := http.NewRequest("PATCH", "http://"+t.Server+"/data/file/temp/"+t.Uuid, strings.NewReader(string(p)))
+	dataClient, err := dataRpc.GetDataClient(t.Server)
 	if err != nil {
 		return 0, err
 	}
-
-	client := http.Client{}
-	resp, err := client.Do(req)
+	err = dataClient.UploadTempFile(context.Background(), t.Uuid, strings.NewReader(string(p)))
 	if err != nil {
 		return 0, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("dataServer return http code %d", resp.StatusCode)
 	}
 
 	t.Total += uint(len(p))
@@ -37,33 +33,25 @@ func (t *TempPutStream) Write(p []byte) (n int, err error) {
 }
 
 func (t *TempPutStream) Commit(flag bool, hash string) {
-	method := "DELETE"
-	if flag {
-		method = "PUT"
+	dataClient, err := dataRpc.GetDataClient(t.Server)
+	if err != nil {
+		return
 	}
 
-	req, _ := http.NewRequest(method, "http://"+t.Server+"/data/file/temp/"+t.Uuid, nil)
-	req.Header.Set("Digest", "SHA-256="+hash)
-	client := http.Client{}
-	client.Do(req)
+	if flag {
+		dataClient.CommitTempFile(context.Background(), t.Uuid, hash)
+	} else {
+		dataClient.DeleteTempFile(context.Background(), t.Uuid)
+	}
 }
 
 func NewTempPutStream(server string, hash string, size uint) (*TempPutStream, error) {
 	// 将文件信息存到临时目录下文件名为生成的uuid
-	req, err := http.NewRequest("POST", "http://"+server+"/data/file/temp/"+url.PathEscape(hash), nil)
+	dataClient, err := dataRpc.GetDataClient(server)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Set("size", fmt.Sprintf("%d", size))
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// 根据uuid将临时文件转正和删除
-	uuid, err := io.ReadAll(resp.Body)
+	uuid, err := dataClient.CreateTempInfo(context.Background(), url.PathEscape(hash), int64(size))
 	if err != nil {
 		return nil, err
 	}

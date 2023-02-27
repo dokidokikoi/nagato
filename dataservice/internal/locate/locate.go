@@ -40,7 +40,7 @@ func StartLocate() {
 		}
 		id := Locate(hash)
 		if id != -1 {
-			q.Send(msg.ReplyTo, types.LocateMessage{Addr: config.Config().ServerConfig.Address(), Id: id})
+			q.Send(msg.ReplyTo, types.LocateMessage{Addr: config.Config().RpcConfig.Address(), Id: id})
 		}
 	}
 }

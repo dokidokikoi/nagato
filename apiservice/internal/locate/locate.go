@@ -40,5 +40,5 @@ func Locate(name string) map[int]string {
 }
 
 func Exist(name string) bool {
-	return len(Locate(url.PathEscape(name))) >= 3
+	return len(Locate(name)) >= 3
 }

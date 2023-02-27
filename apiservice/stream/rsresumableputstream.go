@@ -1,13 +1,13 @@
 package stream
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"nagato/apiservice/internal/model"
-	"nagato/common/tools"
-	"net/http"
+
+	dataRpc "nagato/apiservice/rpc/client/data"
 )
 
 type RSResumablePutStream struct {
@@ -22,16 +22,16 @@ func (s *RSResumablePutStream) ToToken() string {
 
 // 获取已上传文件大小
 func (s *RSResumablePutStream) CurrentSize() (uint, error) {
-	resp, err := http.Head(fmt.Sprintf("http://%s/data/file/temp/%s", s.Servers[0], s.Uuids[0]))
+	dataRpc, err := dataRpc.GetDataClient(s.Servers[0])
+	if err != nil {
+		return 0, err
+	}
+	perShard, err := dataRpc.HeadTempFile(context.Background(), s.Uuids[0])
 	if err != nil {
 		return 0, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("发送数据服务head请求返回状态码不为200, code: %d", resp.StatusCode)
-	}
-
-	size := tools.GetSizeFromHeader(resp.Header) * DATA_SHARDS
+	size := uint(perShard) * DATA_SHARDS
 	// 由于rs纠删码计算出的size可能大于文件真实size
 	if size > s.Size {
 		size = s.Size

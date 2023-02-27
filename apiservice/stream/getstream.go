@@ -1,26 +1,29 @@
 package stream
 
 import (
+	"context"
 	"fmt"
 	"io"
-	"net/http"
+
+	dataRpc "nagato/apiservice/rpc/client/data"
 )
 
 type GetStream struct {
 	reader io.Reader
 }
 
-func newGetStream(url string) (*GetStream, error) {
-	r, e := http.Get(url)
-	if e != nil {
-		return nil, e
+func newGetStream(server string, namePrefix string) (*GetStream, error) {
+	dataRpc, err := dataRpc.GetDataClient(server)
+	if err != nil {
+		return nil, err
 	}
-	if r.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("dataServer return http code %d", r.StatusCode)
+	r, err := dataRpc.GetMatter(context.Background(), namePrefix)
+	if err != nil {
+		return nil, err
 	}
 
 	return &GetStream{
-		r.Body,
+		r,
 	}, nil
 }
 
@@ -29,7 +32,7 @@ func NewGetStream(server, hashEncode string) (*GetStream, error) {
 		return nil, fmt.Errorf("invalid server %s object %s", server, hashEncode)
 	}
 
-	return newGetStream("http://" + server + "/data/file/" + hashEncode)
+	return newGetStream(server, hashEncode)
 }
 
 func (r *GetStream) Read(p []byte) (n int, err error) {

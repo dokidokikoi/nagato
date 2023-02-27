@@ -1,9 +1,10 @@
 package stream
 
 import (
-	"fmt"
+	"context"
 	"io"
-	"net/http"
+
+	dataRpc "nagato/apiservice/rpc/client/data"
 )
 
 type RSResumableGetStream struct {
@@ -13,12 +14,16 @@ type RSResumableGetStream struct {
 func NewRSResumableGetStream(dataServers []string, uuids []string, size uint) (*RSResumableGetStream, error) {
 	readers := make([]io.Reader, ALL_SHARDS)
 	for i := range dataServers {
-		resp, err := http.Get(fmt.Sprintf("http://%s/data/file/temp/%s", dataServers[i], uuids[i]))
+		dataRpc, err := dataRpc.GetDataClient(dataServers[i])
+		if err != nil {
+			return nil, err
+		}
+		r, err := dataRpc.GetTempFile(context.Background(), uuids[i])
 		if err != nil {
 			return nil, err
 		}
 
-		readers[i] = resp.Body
+		readers[i] = r
 	}
 
 	doc := NewDecoder(readers, nil, size)

@@ -11,7 +11,7 @@ func StartHeartbeat() {
 	defer q.Close()
 
 	for {
-		q.Publish("apiServers", config.Config().ServerConfig.Address())
+		q.Publish("apiServers", config.Config().RpcConfig.Address())
 		time.Sleep(5 * time.Second)
 	}
 }
