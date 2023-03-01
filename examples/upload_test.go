@@ -109,6 +109,7 @@ func Upload(token string, filePath string, seek int64) error {
 	}
 }
 
+// 分片上传
 func TestUpload(t *testing.T) {
 	res, err := getUploadToken("./logo.png")
 	if err != nil {
@@ -144,6 +145,7 @@ func ResumeUpload(token string) error {
 	return err
 }
 
+// 断点重传
 func TestResumeUpload(t *testing.T) {
 	ResumeUpload("eyJOYW1lIjoibG9nbyIsIlNpemUiOjE1NDAwNjUsIkhhc2giOiJNeUZjSEE2SER5S01HNnR3TndrUTVGQUIvUVRrUjQzcXVyVDF2ZGF4K0FrPSIsIlNlcnZlcnMiOlsiOjEwMTUzIiwiOjEwMTUwIiwiOjEwMTUyIiwiOjEwMTUxIl0sIlV1aWRzIjpbIjE5ODczMTU5LTVBQkUtNDg0Mi04N0Q5LUI4NkU1NDE2RkEyMiIsIkNFMkM0QjY5LTRCMUQtNEQ5Mi04MkFGLUYxMDM5NEY3OTUwNiIsIjNDRUY3QzcxLTNDNTUtNEE1NS05RDAwLTQ0RDc3ODc4Q0EwNiIsIkQ0MTA3NDI1LTNDNjgtNDM1Ny1BNTVBLTAwMTRCQkNDQjJGOSJdfQ==")
 }

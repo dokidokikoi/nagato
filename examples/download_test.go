@@ -49,6 +49,7 @@ func Download(uuid string, start, end int64) (int64, error) {
 	return n, err
 }
 
+// 分片下载
 func TestDownload(t *testing.T) {
 	size := int64(1540065)
 	current := int64(0)
