@@ -11,6 +11,7 @@ import (
 	"nagato/dataservice/internal/model"
 	"net/url"
 	"os"
+	"time"
 )
 
 // 将临时文件的信息存储到临时目录并创建出临时文件的文件
@@ -27,7 +28,15 @@ func (s matterSrv) CreateTempFile(ctx context.Context, hashEncode string, uuid s
 	}
 
 	// 创建出临时文件的文件
-	os.Create(config.Config().FileSystemConfig.TempDir + info.Uuid + ".dat")
+	_, err = os.Create(config.Config().FileSystemConfig.TempDir + info.Uuid + ".dat")
+	if err != nil {
+		return err
+	}
+	go func() {
+		time.Sleep(5 * 24 * time.Hour)
+		os.Remove(config.Config().FileSystemConfig.TempDir + info.Uuid + ".dat")
+		os.Remove(config.Config().FileSystemConfig.TempDir + info.Uuid)
+	}()
 	return nil
 }
 

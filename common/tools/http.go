@@ -40,7 +40,7 @@ func GetOffsetFromHeader(h http.Header) uint {
 		return 0
 	}
 	bytePos := strings.Split(byteRange[6:], "-")
-	offset, _ := strconv.ParseUint(bytePos[0], 0, 32)
+	offset, _ := strconv.ParseUint(strings.Trim(bytePos[0], " "), 0, 32)
 	return uint(offset)
 }
 

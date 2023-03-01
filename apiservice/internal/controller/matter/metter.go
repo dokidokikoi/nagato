@@ -13,3 +13,11 @@ type MatterController struct {
 func NewMatterController() *MatterController {
 	return &MatterController{service: service.NewService()}
 }
+
+type UploadMatter struct {
+	Name    string `json:"name" binding:"required"`
+	Sha256  string `json:"sha256" binding:"required"`
+	Size    uint   `json:"size" binding:"required"`
+	Privacy bool   `json:"privacy"`
+	Path    string `json:"path"`
+}

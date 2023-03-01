@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"nagato/common/tools"
-	"net/url"
 )
 
 type RSGetStream struct {
@@ -24,6 +23,8 @@ func (s *RSGetStream) Seek(offset int64, whence int) (int64, error) {
 	if whence != io.SeekCurrent {
 		panic("only support SeekCurrent")
 	}
+
+	// 跳过多余的数据
 	for offset != 0 {
 		length := int64(BLOCK_SIZE)
 		if offset < length {
@@ -38,6 +39,7 @@ func (s *RSGetStream) Seek(offset int64, whence int) (int64, error) {
 }
 
 func NewRSGetStream(locateInfo map[int]string, dataServers []string, hash string, size uint) (*RSGetStream, error) {
+	// 如果数据服务数量少于ALL_SHARDS，无法满足rs纠删码
 	if len(locateInfo)+len(dataServers) != ALL_SHARDS {
 		return nil, fmt.Errorf("dataServers number mismatch")
 	}
@@ -45,12 +47,14 @@ func NewRSGetStream(locateInfo map[int]string, dataServers []string, hash string
 	readers := make([]io.Reader, ALL_SHARDS)
 	for i := 0; i < ALL_SHARDS; i++ {
 		server := locateInfo[i]
+		// 补全 locateInfo ，塞入所有数据服务的信息
 		if server == "" {
 			locateInfo[i] = dataServers[0]
 			dataServers = dataServers[1:]
 			continue
 		}
-		reader, err := NewGetStream(server, fmt.Sprintf("%s.%d", url.PathEscape(hash), i))
+		// 获取正常的数据输入流
+		reader, err := NewGetStream(server, fmt.Sprintf("%s.%d", hash, i))
 		if err == nil {
 			readers[i] = reader
 		}

@@ -4,6 +4,7 @@ import (
 	"nagato/common/rabbitmq"
 	"nagato/common/types"
 	"nagato/dataservice/internal/config"
+	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -16,8 +17,9 @@ var matterHash = make(map[string]int)
 var mutex sync.Mutex
 
 func Locate(hash string) int {
+	name := url.PathEscape(hash)
 	mutex.Lock()
-	id, ok := matterHash[hash]
+	id, ok := matterHash[name]
 	mutex.Unlock()
 	if !ok {
 		return -1

@@ -106,9 +106,9 @@ func cleanDatabase(db *gorm.DB) error {
 	if err := db.Migrator().DropTable(&model.Install{}); err != nil {
 		return errors.Wrap(err, "drop install model failed")
 	}
-	if err := db.Migrator().DropTable(&model.BlankMatter{}); err != nil {
-		return errors.Wrap(err, "drop blank_matter model failed")
-	}
+	// if err := db.Migrator().DropTable(&model.BlankMatter{}); err != nil {
+	// 	return errors.Wrap(err, "drop blank_matter model failed")
+	// }
 	if err := db.Migrator().DropTable(&model.SmallFileCache{}); err != nil {
 		return errors.Wrap(err, "drop small_file_cache model failed")
 	}
@@ -139,9 +139,9 @@ func migrateDatabase(db *gorm.DB) error {
 	if err := db.AutoMigrate(&model.Install{}); err != nil {
 		return errors.Wrap(err, "migrate install model failed")
 	}
-	if err := db.AutoMigrate(&model.BlankMatter{}); err != nil {
-		return errors.Wrap(err, "migrate blank_matter model failed")
-	}
+	// if err := db.AutoMigrate(&model.BlankMatter{}); err != nil {
+	// 	return errors.Wrap(err, "migrate blank_matter model failed")
+	// }
 	if err := db.AutoMigrate(&model.SmallFileCache{}); err != nil {
 		return errors.Wrap(err, "migrate small_file_cache model failed")
 	}

@@ -8,9 +8,9 @@ import (
 	commonErrors "nagato/common/errors"
 	"nagato/common/tools"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"path"
-	"strconv"
 	"strings"
 
 	"github.com/dokidokikoi/go-common/core"
@@ -22,7 +22,7 @@ import (
 )
 
 func (c MatterController) Locate(ctx *gin.Context) {
-	hash := ctx.Param("hash")
+	hash, _ := url.PathUnescape(ctx.Param("hash"))
 	info := locate.Locate(hash)
 	if len(info) == 0 {
 		zaplog.L().Sugar().Errorf("%s: 文件不存在", hash)
@@ -91,20 +91,14 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
 		return
 	}
+
+	core.WriteResponse(ctx, myErrors.Success("上传成功"), nil)
 }
 
 func (c MatterController) GenUploadToken(ctx *gin.Context) {
-	name := ctx.Param("name")
-	hash := tools.GetHashFromHeader(ctx.Request.Header)
-	if hash == "" {
-		zaplog.L().Sugar().Errorf("name: %s hash: %s 不能为空", name, hash)
-		core.WriteResponse(ctx, myErrors.ApiErrValidation, nil)
-		return
-	}
-	size, err := strconv.ParseUint(ctx.Request.Header.Get("size"), 0, 32)
-	if err != nil {
-		zaplog.L().Error("获取size失败", zap.Error(err))
-		core.WriteResponse(ctx, myErrors.ApiErrValidation, nil)
+	var input UploadMatter
+	if ctx.ShouldBindJSON(&input) != nil {
+		core.WriteResponse(ctx, myErrors.ApiErrValidation, "")
 		return
 	}
 
@@ -114,15 +108,28 @@ func (c MatterController) GenUploadToken(ctx *gin.Context) {
 		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
 		return
 	}
-	ext := strings.TrimLeft(path.Ext(name), ".")
+	ext := strings.TrimLeft(path.Ext(input.Name), ".")
+	if input.Path != "" {
+		// TODO: 对路径中的文件夹校验是否存在
+		// 不存在的情况需要新建文件夹
+		if input.Path[len(input.Path)-1:] != "/" {
+			input.Path = input.Path + "/"
+		}
+		if input.Path[0:1] == "/" {
+			input.Path = input.Path[1:]
+		}
+	}
+	// TODO: 同一用户下不能存在同一路径的文件
+	// TODO: 获取 PUUID 并写入数据库
 	createMatter := &model.Matter{
-		UUID:   strings.Trim(string(newUUID), "\n"),
-		UserID: c.GetCurrentUser(ctx).ID,
-		Name:   strings.ReplaceAll(name, "."+ext, ""),
-		Sha256: hash,
-		Size:   uint(size),
-		Ext:    ext,
-		Path:   "/" + name,
+		UUID:    strings.Trim(string(newUUID), "\n"),
+		UserID:  c.GetCurrentUser(ctx).ID,
+		Name:    strings.ReplaceAll(input.Name, "."+ext, ""),
+		Sha256:  input.Sha256,
+		Size:    input.Size,
+		Ext:     ext,
+		Path:    "/" + input.Path + input.Name,
+		Privacy: input.Privacy,
 	}
 
 	token, err := c.service.Matter().GenUploadToken(ctx, createMatter)

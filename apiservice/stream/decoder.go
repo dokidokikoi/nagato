@@ -22,6 +22,7 @@ type decoder struct {
 }
 
 func (d *decoder) Read(p []byte) (n int, err error) {
+	// cache无数据，从输入流中读入cache
 	if d.cacheSize == 0 {
 		err := d.getData()
 		if err != nil {
@@ -29,6 +30,7 @@ func (d *decoder) Read(p []byte) (n int, err error) {
 		}
 	}
 
+	// 从cache中读取数据
 	length := len(p)
 	if d.cacheSize < length {
 		length = d.cacheSize
@@ -40,6 +42,7 @@ func (d *decoder) Read(p []byte) (n int, err error) {
 	return length, nil
 }
 
+// 从输入流读数据到cache中
 func (d *decoder) getData() error {
 	// 文件读取完毕
 	if d.total == d.size {
@@ -49,23 +52,28 @@ func (d *decoder) getData() error {
 	repairIds := make([]int, 0)
 	for i := range shards {
 		if d.readers[i] == nil {
+			// 记录需要修复的分片id
 			repairIds = append(repairIds, i)
 		} else {
+			// 从输入流中读取数据
 			shards[i] = make([]byte, BLOCK_PER_SHARD)
 			n, err := io.ReadFull(d.readers[i], shards[i])
 			if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
 				shards[i] = nil
 			} else if n != BLOCK_PER_SHARD {
+				// 未将缓冲读满，缩减切片大小。防止将零值读入cache
 				shards[i] = shards[i][:n]
 			}
 		}
 	}
 
+	// 重新生成rs分片
 	err := d.enc.Reconstruct(shards)
 	if err != nil {
 		return err
 	}
 
+	// 将待修复的分片写入输出流
 	for i := range repairIds {
 		id := repairIds[i]
 		d.writers[id].Write(shards[id])
@@ -92,6 +100,7 @@ func (d *decoder) getData() error {
 func NewDecoder(readers []io.Reader, writers []io.Writer, size uint) *decoder {
 	enc, _ := reedsolomon.New(DATA_SHARDS, PARITY_SHARDS)
 	hashs := make([]hash.Hash, len(writers))
+	// 准备计算每个分片的散列值，防止传输过程中导致数据缺失
 	for i, _ := range hashs {
 		hashs[i] = sha256.New()
 	}

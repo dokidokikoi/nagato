@@ -5,7 +5,6 @@ import (
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
 	"nagato/common/types"
-	"net/url"
 	"time"
 )
 
@@ -14,9 +13,9 @@ type LocateMessage struct {
 	Id   int
 }
 
-func Locate(name string) map[int]string {
+func Locate(hash string) map[int]string {
 	q := rabbitmq.New(config.Config().RabbitMqConfig.Dns())
-	q.Publish("dataServers", url.PathEscape(name))
+	q.Publish("dataServers", hash)
 	c := q.Consume()
 
 	// 一秒之后关闭消息队列
@@ -39,6 +38,6 @@ func Locate(name string) map[int]string {
 	return locateInfo
 }
 
-func Exist(name string) bool {
-	return len(Locate(name)) >= 3
+func Exist(hash string) bool {
+	return len(Locate(hash)) >= 3
 }

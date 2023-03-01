@@ -11,7 +11,6 @@ import (
 	"nagato/apiservice/stream"
 	"nagato/common/tools"
 
-	zaplog "github.com/dokidokikoi/go-common/log/zap"
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
@@ -49,7 +48,6 @@ func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Re
 	}
 
 	tempPutStream.Commit(true)
-	zaplog.L().Sugar().Info("上传文件: %s 成功, hash: %s", example.Path, example.Sha256)
 
 	return s.Create(ctx, example)
 }
@@ -112,6 +110,7 @@ func (s matterSrv) UploadBigMatter(ctx context.Context, token string, offset uin
 		if n != stream.BLOCK_SIZE && current != r.Size {
 			return nil
 		}
+
 		r.Write(bytes[:n])
 
 		// 文件全部写入完成
@@ -127,10 +126,10 @@ func (s matterSrv) UploadBigMatter(ctx context.Context, token string, offset uin
 			if err != nil {
 				return err
 			}
-			if hash != r.Hash {
-				r.Commit(false)
-				return fmt.Errorf("resumable put done but hash mismatch")
-			}
+			// if hash != r.Hash {
+			// 	r.Commit(false)
+			// 	return fmt.Errorf("resumable put done but hash mismatch")
+			// }
 
 			if locate.Exist(hash) {
 				r.Commit(false)

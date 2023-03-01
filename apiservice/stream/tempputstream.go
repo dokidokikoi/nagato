@@ -3,7 +3,6 @@ package stream
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
 
 	dataRpc "nagato/apiservice/rpc/client/data"
@@ -51,7 +50,7 @@ func NewTempPutStream(server string, hash string, size uint) (*TempPutStream, er
 	if err != nil {
 		return nil, err
 	}
-	uuid, err := dataClient.CreateTempInfo(context.Background(), url.PathEscape(hash), int64(size))
+	uuid, err := dataClient.CreateTempInfo(context.Background(), hash, int64(size))
 	if err != nil {
 		return nil, err
 	}
