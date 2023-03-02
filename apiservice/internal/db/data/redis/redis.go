@@ -17,6 +17,10 @@ var (
 	once         sync.Once
 )
 
+func (s Store) Matters() *matters {
+	return newMatters(s.cli)
+}
+
 func GetRedisFactory() (*Store, error) {
 	once.Do(func() {
 		client := redis.NewClient(&redis.Options{

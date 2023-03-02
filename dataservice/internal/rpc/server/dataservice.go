@@ -150,6 +150,12 @@ func (d *DataService) HeadTempFile(ctx context.Context, req *pb.CommonReq) (resp
 	return
 }
 
+func (d *DataService) CheckTempFileHash(ctx context.Context, req *pb.CheckTempFileHashReq) (resp *pb.CheckTempFileHashResp, err error) {
+	resp = &pb.CheckTempFileHashResp{}
+	err = d.service.Matter().CheckTempFileHash(ctx, req.Uuid, req.Hash, req.Offset)
+	return
+}
+
 func (d *DataService) GetMatter(req *pb.GetMatterReq, stream pb.Data_GetMatterServer) error {
 	if req.NamePrefix == "" {
 		zaplog.L().Error("hash不能为空")

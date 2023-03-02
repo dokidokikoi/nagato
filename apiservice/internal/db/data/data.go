@@ -39,8 +39,8 @@ func (d dataCenter) Logs() db.ILogStore {
 	return d.mongo.Logs()
 }
 
-func (d dataCenter) Matters() db.IMatterStore {
-	return d.pg.Matters()
+func (d *dataCenter) Matters() db.IMatterStore {
+	return newMatters(d)
 }
 
 func (d dataCenter) Shares() db.IShareStore {

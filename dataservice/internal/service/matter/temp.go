@@ -72,6 +72,45 @@ func (s matterSrv) WriteTempFile(ctx context.Context, uuid string, data io.Reade
 	return nil
 }
 
+func (s matterSrv) CheckTempFileHash(ctx context.Context, uuid, hash string, offset int64) error {
+	infoFile := config.Config().FileSystemConfig.TempDir + uuid
+	datFile := infoFile + ".dat"
+	f, err := os.Open(datFile)
+	if err != nil {
+		return err
+	}
+
+	cacheSize := 1 << 20
+	cnt := offset / int64(cacheSize)
+	buf := make([]byte, cacheSize)
+	for ; cnt > 0; cnt-- {
+		_, err := io.ReadFull(f, buf)
+		if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
+			return err
+		}
+	}
+	buf = buf[:int(offset%int64(cacheSize))]
+	_, err = io.ReadFull(f, buf)
+	if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
+		return err
+	}
+
+	d, err := tools.CalculateHash(f)
+	if err != nil {
+		os.Remove(infoFile)
+		os.Remove(datFile)
+		return err
+	}
+
+	if d != hash {
+		os.Remove(infoFile)
+		os.Remove(datFile)
+		return fmt.Errorf("hash 不匹配,希望的hash: %s, 文件实际hash: %s", hash, d)
+	}
+
+	return nil
+}
+
 func (s matterSrv) CommitMatter(ctx context.Context, uuid, hash string) error {
 	tempInfo, err := model.ReadFromTempFile(uuid)
 	if err != nil {

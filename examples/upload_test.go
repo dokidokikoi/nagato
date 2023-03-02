@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-var authorization = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiIxMjNAZXhhbXBsZS5jb20iLCJyb2xlIjoiIiwiZXhwIjoxNjc3NzIyMzIwLCJpYXQiOjE2Nzc2MzU5MjAsImlzcyI6ImhhcnVrYXplIiwibmJmIjoxNjc3NjM1OTIwfQ.PEBiv37ersSPv4z3-_V6pzBHbVp-3-UwY42-XOTrOUA"
+var authorization = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiIxMjNAZXhhbXBsZS5jb20iLCJyb2xlIjoiIiwiZXhwIjoxNjc3ODIzMTUwLCJpYXQiOjE2Nzc3MzY3NTAsImlzcyI6ImhhcnVrYXplIiwibmJmIjoxNjc3NzM2NzUwfQ.jU_qjeBpnitqtwzWgVHTWuM_Q1kCWiA1ZRR_7Wd9_Y4"
 
 type response struct {
 	Message string `json:"message"`
@@ -116,9 +116,9 @@ func TestUpload(t *testing.T) {
 		panic(err)
 	}
 
-	fmt.Printf("%+v", res)
+	fmt.Printf("%+v\n", res)
 	err = Upload(res.Data, "./logo.png", 0)
-	println(err.Error())
+	fmt.Printf("%+v", err)
 }
 
 func ResumeUpload(token string) error {

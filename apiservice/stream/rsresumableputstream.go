@@ -40,6 +40,21 @@ func (s *RSResumablePutStream) CurrentSize() (uint, error) {
 	return size, nil
 }
 
+func (s *RSResumablePutStream) Check(offset int64) error {
+	for i := range s.writers {
+		cli, err := dataRpc.GetDataClient(s.Servers[i])
+		if err != nil {
+			return err
+		}
+		err = cli.CheckTempFileHash(context.Background(), s.Uuids[i], base64.StdEncoding.EncodeToString(s.encoder.hashs[i].Sum(nil)), offset)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func NewRSResumablePutStream(dataServers []string, name, hash string, size uint) (*RSResumablePutStream, error) {
 	rsPutStream, err := NewRSPutStream(dataServers, hash, size)
 	if err != nil {

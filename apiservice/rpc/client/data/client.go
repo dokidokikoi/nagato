@@ -110,6 +110,16 @@ func (d DataService) GetMatter(ctx context.Context, namePrefix string) (io.Reade
 	return NewRpcGetStream(FileDataRecv{stream}), nil
 }
 
+func (d DataService) CheckTempFileHash(ctx context.Context, uuid, hash string, offset int64) error {
+	_, err := d.client.CheckTempFileHash(ctx, &pb.CheckTempFileHashReq{
+		Uuid:   uuid,
+		Hash:   hash,
+		Offset: offset,
+	})
+
+	return err
+}
+
 func GetDataClient(addr string) (*DataService, error) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))

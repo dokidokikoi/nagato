@@ -6,10 +6,10 @@ import (
 	db "github.com/dokidokikoi/go-common/db/base"
 )
 
-type matters struct {
+type Matters struct {
 	db.PgModel[model.Matter]
 }
 
-func newMatters(d *Store) *matters {
-	return &matters{db.PgModel[model.Matter]{DB: d.db}}
+func newMatters(d *Store) *Matters {
+	return &Matters{db.PgModel[model.Matter]{DB: d.db}}
 }

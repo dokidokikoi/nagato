@@ -34,6 +34,8 @@ type DataClient interface {
 	GetTempFile(ctx context.Context, in *CommonReq, opts ...grpc.CallOption) (Data_GetTempFileClient, error)
 	// 获取已上传临时文件的大小
 	HeadTempFile(ctx context.Context, in *CommonReq, opts ...grpc.CallOption) (*HeadTempFileResp, error)
+	// 校验临时文件hash
+	CheckTempFileHash(ctx context.Context, in *CheckTempFileHashReq, opts ...grpc.CallOption) (*CheckTempFileHashResp, error)
 	// 获取文件
 	GetMatter(ctx context.Context, in *GetMatterReq, opts ...grpc.CallOption) (Data_GetMatterClient, error)
 }
@@ -148,6 +150,15 @@ func (c *dataClient) HeadTempFile(ctx context.Context, in *CommonReq, opts ...gr
 	return out, nil
 }
 
+func (c *dataClient) CheckTempFileHash(ctx context.Context, in *CheckTempFileHashReq, opts ...grpc.CallOption) (*CheckTempFileHashResp, error) {
+	out := new(CheckTempFileHashResp)
+	err := c.cc.Invoke(ctx, "/api.Data/CheckTempFileHash", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *dataClient) GetMatter(ctx context.Context, in *GetMatterReq, opts ...grpc.CallOption) (Data_GetMatterClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Data_ServiceDesc.Streams[2], "/api.Data/GetMatter", opts...)
 	if err != nil {
@@ -196,6 +207,8 @@ type DataServer interface {
 	GetTempFile(*CommonReq, Data_GetTempFileServer) error
 	// 获取已上传临时文件的大小
 	HeadTempFile(context.Context, *CommonReq) (*HeadTempFileResp, error)
+	// 校验临时文件hash
+	CheckTempFileHash(context.Context, *CheckTempFileHashReq) (*CheckTempFileHashResp, error)
 	// 获取文件
 	GetMatter(*GetMatterReq, Data_GetMatterServer) error
 	mustEmbedUnimplementedDataServer()
@@ -222,6 +235,9 @@ func (UnimplementedDataServer) GetTempFile(*CommonReq, Data_GetTempFileServer) e
 }
 func (UnimplementedDataServer) HeadTempFile(context.Context, *CommonReq) (*HeadTempFileResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HeadTempFile not implemented")
+}
+func (UnimplementedDataServer) CheckTempFileHash(context.Context, *CheckTempFileHashReq) (*CheckTempFileHashResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckTempFileHash not implemented")
 }
 func (UnimplementedDataServer) GetMatter(*GetMatterReq, Data_GetMatterServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetMatter not implemented")
@@ -358,6 +374,24 @@ func _Data_HeadTempFile_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Data_CheckTempFileHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckTempFileHashReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataServer).CheckTempFileHash(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Data/CheckTempFileHash",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataServer).CheckTempFileHash(ctx, req.(*CheckTempFileHashReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Data_GetMatter_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(GetMatterReq)
 	if err := stream.RecvMsg(m); err != nil {
@@ -401,6 +435,10 @@ var Data_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "HeadTempFile",
 			Handler:    _Data_HeadTempFile_Handler,
+		},
+		{
+			MethodName: "CheckTempFileHash",
+			Handler:    _Data_CheckTempFileHash_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

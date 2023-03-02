@@ -32,7 +32,7 @@ func (d *Store) Installs() *installs {
 	return newInstalls(d)
 }
 
-func (d *Store) Matters() *matters {
+func (d *Store) Matters() *Matters {
 	return newMatters(d)
 }
 

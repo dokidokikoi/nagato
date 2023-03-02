@@ -54,7 +54,7 @@ func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Re
 
 func (s matterSrv) GenUploadToken(ctx context.Context, example *model.Matter) (string, error) {
 	if locate.Exist(example.Sha256) {
-		_, err := s.Get(ctx, &model.Matter{Path: example.Path}, &meta.GetOption{Include: []string{"sha256"}})
+		_, err := s.Get(ctx, &model.Matter{Path: example.Path, UserID: example.UserID}, nil)
 		if err != nil {
 			err = s.Create(ctx, example)
 			return "", err
@@ -108,7 +108,11 @@ func (s matterSrv) UploadBigMatter(ctx context.Context, token string, offset uin
 		}
 
 		if n != stream.BLOCK_SIZE && current != r.Size {
-			return nil
+			err := r.Check(int64(offset) / 3)
+			if err != nil {
+				r.Commit(false)
+			}
+			return err
 		}
 
 		r.Write(bytes[:n])
