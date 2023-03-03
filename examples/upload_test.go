@@ -63,14 +63,13 @@ func getUploadToken(filePath string) (*response, error) {
 	return res, nil
 }
 
-func Upload(token string, filePath string, seek int64) error {
+func Upload(token string, filePath string, seek int64, cacheSize int) error {
 	f, err := os.Open(filePath)
 	if err != nil {
 		panic(err)
 	}
 
-	size := 24000
-	buff := make([]byte, size)
+	buff := make([]byte, cacheSize)
 	current := 0
 
 	if seek != 0 {
@@ -117,35 +116,27 @@ func TestUpload(t *testing.T) {
 	}
 
 	fmt.Printf("%+v\n", res)
-	err = Upload(res.Data, "./logo.png", 0)
-	fmt.Printf("%+v", err)
-}
 
-func ResumeUpload(token string) error {
-	req, err := http.NewRequest(http.MethodHead, "http://localhost:10000/api/file/temp/"+token, nil)
+	req, err := http.NewRequest(http.MethodHead, "http://localhost:10000/api/file/temp/"+res.Data, nil)
 	req.Header.Set("Authorization", authorization)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	length, err := strconv.ParseInt(resp.Header.Get("content-length"), 10, 64)
 	if err != nil {
-		return err
+		panic(err)
+	}
+	perSize, err := strconv.Atoi(resp.Header.Get("per-size"))
+	if err != nil {
+		panic(err)
 	}
 
-	fmt.Println(length)
-
-	err = Upload(token, "./logo.png", length)
-
-	return err
-}
-
-// 断点重传
-func TestResumeUpload(t *testing.T) {
-	ResumeUpload("eyJOYW1lIjoibG9nbyIsIlNpemUiOjE1NDAwNjUsIkhhc2giOiJNeUZjSEE2SER5S01HNnR3TndrUTVGQUIvUVRrUjQzcXVyVDF2ZGF4K0FrPSIsIlNlcnZlcnMiOlsiOjEwMTUzIiwiOjEwMTUwIiwiOjEwMTUyIiwiOjEwMTUxIl0sIlV1aWRzIjpbIjE5ODczMTU5LTVBQkUtNDg0Mi04N0Q5LUI4NkU1NDE2RkEyMiIsIkNFMkM0QjY5LTRCMUQtNEQ5Mi04MkFGLUYxMDM5NEY3OTUwNiIsIjNDRUY3QzcxLTNDNTUtNEE1NS05RDAwLTQ0RDc3ODc4Q0EwNiIsIkQ0MTA3NDI1LTNDNjgtNDM1Ny1BNTVBLTAwMTRCQkNDQjJGOSJdfQ==")
+	err = Upload(res.Data, "./logo.png", length, perSize)
+	fmt.Printf("%+v", err)
 }

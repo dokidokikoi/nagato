@@ -63,3 +63,23 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 
 	io.Copy(ctx.Writer, reader)
 }
+
+func (c MatterController) HeadMatter(ctx *gin.Context) {
+	uuid := ctx.Param("uuid")
+
+	currentUser := c.GetCurrentUser(ctx)
+	matter, err := c.service.Matter().Get(ctx, &model.Matter{UUID: uuid, UserID: currentUser.ID}, nil)
+	if err != nil {
+		zap.L().Sugar().Errorf("文件不存在: uuid: %s, err: %s", uuid, err.Error())
+		core.WriteResponse(ctx, commonErrors.ApiErrFileNotFound, nil)
+		return
+	}
+
+	ctx.Writer.Header().Set("content-length", fmt.Sprintf("%d", matter.Size))
+	ctx.Writer.Header().Set("file-name", fmt.Sprintf("%s.%s", matter.Name, matter.Ext))
+
+	// core.WriteResponse(ctx, nil, gin.H{
+	// 	"size": matter.Size,
+	// 	"name": fmt.Sprintf("%s.%s", matter.Name, matter.Ext),
+	// })
+}

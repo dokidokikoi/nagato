@@ -5,10 +5,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"testing"
 )
 
-func Download(uuid string, start, end int64) (int64, error) {
+func Download(uuid string, start, end int64, fileName string) (int64, error) {
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:10000/api/file/"+uuid, nil)
 	if err != nil {
 		return 0, err
@@ -32,13 +33,13 @@ func Download(uuid string, start, end int64) (int64, error) {
 	}
 
 	if start == 0 {
-		_, err := os.Create("./files/test.png")
+		_, err := os.Create("./files/" + fileName)
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	f, err := os.OpenFile("./files/test.png", os.O_WRONLY|os.O_APPEND, 0)
+	f, err := os.OpenFile("./files/"+fileName, os.O_WRONLY|os.O_APPEND, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -51,10 +52,30 @@ func Download(uuid string, start, end int64) (int64, error) {
 
 // 分片下载
 func TestDownload(t *testing.T) {
-	size := int64(1540065)
+	uuid := "9254C1EB-454B-4187-A90C-341745C2EEC7"
+
+	req, err := http.NewRequest(http.MethodHead, "http://localhost:10000/api/file/"+uuid, nil)
+	req.Header.Set("Authorization", authorization)
+	if err != nil {
+		panic(err)
+	}
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	size, err := strconv.ParseInt(resp.Header.Get("content-length"), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	fileName := resp.Header.Get("file-name")
+
+	fmt.Printf("fileName: %s, size: %d\n", fileName, size)
+
 	current := int64(0)
 	for current < size {
-		n, err := Download("F2C2E0FE-61D5-423F-B71B-2DD77CB5A956", current, current+1<<20)
+		n, err := Download(uuid, current, current+1<<20, fileName)
 		current += n
 		if err != nil {
 			panic(err)
