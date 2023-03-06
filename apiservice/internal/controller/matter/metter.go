@@ -21,3 +21,10 @@ type UploadMatter struct {
 	Privacy bool   `json:"privacy"`
 	Path    string `json:"path"`
 }
+
+type UpdateMatter struct {
+	Name    string `json:"name" binding:"required"`
+	Privacy bool   `json:"privacy"  binding:"required"`
+	Path    string `json:"path"  binding:"required"`
+	Ext     string `json:"ext"  binding:"required"`
+}

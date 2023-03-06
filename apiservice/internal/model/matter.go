@@ -10,7 +10,7 @@ import (
 type Matter struct {
 	ID        uint           `json:"id" gorm:"primary_key"`
 	UUID      string         `json:"uuid" gorm:"uniqueIndex:idx_matter_uuid"`
-	PUUID     uint           `json:"puuid" gorm:"default:0;index:idx_matter_puuid;"` //index should unique globally.
+	PUUID     string         `json:"puuid" gorm:"index:idx_matter_puuid;"` //index should unique globally.
 	UserID    uint           `json:"user_id" gorm:"default:0;index:idx_matter_user"`
 	Dir       bool           `json:"dir"`
 	Name      string         `json:"name"`

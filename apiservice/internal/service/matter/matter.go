@@ -21,6 +21,8 @@ type IMatterService interface {
 	Del(ctx context.Context, example *model.Matter, option *meta.DeleteOption) error
 	UpdateByWhereNode(ctx context.Context, node *meta.WhereNode, example *model.Matter) error
 	Get(ctx context.Context, example *model.Matter, option *meta.GetOption) (*model.Matter, error)
+	List(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, int64, error)
+	ListMatter(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, error)
 
 	CreateResource(ctx context.Context, example *model.Matter) error
 	GetResourceMate(ctx context.Context, name string, version int) (*model.Matter, error)
@@ -49,6 +51,19 @@ func (s matterSrv) UpdateByWhereNode(ctx context.Context, node *meta.WhereNode, 
 
 func (s matterSrv) Get(ctx context.Context, example *model.Matter, option *meta.GetOption) (*model.Matter, error) {
 	return s.store.Matters().Get(ctx, example, option)
+}
+
+func (s matterSrv) List(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, int64, error) {
+	res, err := s.store.Matters().List(ctx, example, option)
+	if err != nil {
+		return nil, 0, err
+	}
+	total, _ := s.store.Matters().Count(ctx, example, &option.GetOption)
+	return res, total, nil
+}
+
+func (s matterSrv) ListMatter(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, error) {
+	return s.store.Matters().List(ctx, example, option)
 }
 
 func NewMatterService(store db.Store) IMatterService {

@@ -1,7 +1,9 @@
 package router
 
 import (
+	"nagato/apiservice/internal/controller/blank"
 	"nagato/apiservice/internal/controller/matter"
+	"nagato/apiservice/internal/controller/tag"
 	"nagato/apiservice/internal/controller/user"
 	"nagato/apiservice/internal/middleware"
 
@@ -29,6 +31,33 @@ func InitRoutes(r *gin.Engine) {
 		fileR.HEAD("/temp/:token", fileController.Head)
 		fileR.PUT("/temp/:token", fileController.UploadBigMatter)
 		// fileR.GET("/user/:id", fileController.UserMatterList)
+	}
+
+	matterR := apiR.Group("/matter")
+	{
+		matterController := matter.NewMatterController()
+		matterR.GET("/:uuid", matterController.Get)
+		matterR.GET("", matterController.List)
+		matterR.PATCH("/:uuid", matterController.Update)
+
+	}
+
+	blankR := apiR.Group("/blank")
+	{
+		blankController := blank.NewBlankController()
+		blankR.POST("", blankController.Create)
+		blankR.GET("", blankController.List)
+		blankR.PATCH("/:id", blankController.Update)
+		blankR.DELETE("/:id", blankController.Delete)
+		blankR.GET("/:id", blankController.Get)
+	}
+
+	tagR := apiR.Group("/tag")
+	{
+		tagController := tag.NewTagController()
+		tagR.GET("", tagController.List)
+		tagR.POST("", tagController.Create)
+		tagR.DELETE("/:id", tagController.Delete)
 	}
 
 	// userR := r.Group("/user")

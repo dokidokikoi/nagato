@@ -2,7 +2,6 @@ package matter
 
 import (
 	"nagato/apiservice/internal/model"
-	commonErrors "nagato/common/errors"
 
 	"github.com/dokidokikoi/go-common/core"
 	myErrors "github.com/dokidokikoi/go-common/errors"
@@ -16,14 +15,7 @@ func (c MatterController) DelMatter(ctx *gin.Context) {
 
 	// 判断当前用户是否拥有此文件
 	currentUser := c.GetCurrentUser(ctx)
-	_, err := c.service.Matter().Get(ctx, &model.Matter{UUID: uuid, UserID: currentUser.ID}, nil)
-	if err != nil {
-		zaplog.L().Error("删除文件失败", zap.Error(err))
-		core.WriteResponse(ctx, commonErrors.ApiErrFileNotFound, nil)
-		return
-	}
-
-	err = c.service.Matter().Del(ctx, &model.Matter{UUID: uuid}, nil)
+	err := c.service.Matter().Del(ctx, &model.Matter{UUID: uuid, UserID: currentUser.ID}, nil)
 	if err != nil {
 		zaplog.L().Error("删除文件失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)

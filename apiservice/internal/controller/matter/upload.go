@@ -179,3 +179,7 @@ func (c MatterController) Head(ctx *gin.Context) {
 	ctx.Writer.Header().Set("content-length", fmt.Sprintf("%d", current))
 	ctx.Writer.Header().Set("per-size", fmt.Sprintf("%d", (1<<21)-((1<<21)%stream.BLOCK_SIZE)))
 }
+
+func (c MatterController) UploadProgress(ctx *gin.Context) {
+
+}

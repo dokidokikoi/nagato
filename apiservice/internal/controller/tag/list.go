@@ -1,4 +1,4 @@
-package matter
+package tag
 
 import (
 	"nagato/apiservice/internal/model"
@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (c MatterController) List(ctx *gin.Context) {
+func (t TagController) List(ctx *gin.Context) {
 	var pageQuery query.PageQuery
 	if ctx.ShouldBindQuery(&pageQuery) != nil {
 		zaplog.L().Error("参数校验失败")
@@ -19,9 +19,10 @@ func (c MatterController) List(ctx *gin.Context) {
 		return
 	}
 
-	res, total, err := c.service.Matter().List(ctx, &model.Matter{}, pageQuery.GetListOption())
+	currentUser := t.GetCurrentUser(ctx)
+	res, total, err := t.service.Tag().List(ctx, &model.Tag{UserID: currentUser.ID}, pageQuery.GetListOption())
 	if err != nil {
-		zaplog.L().Error("获取matter列表失败", zap.Error(err))
+		zaplog.L().Error("获取tag列表失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
 		return
 	}
