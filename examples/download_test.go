@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 )
@@ -33,13 +34,13 @@ func Download(uuid string, start, end int64, fileName string) (int64, error) {
 	}
 
 	if start == 0 {
-		_, err := os.Create("./files/" + fileName)
+		_, err := os.Create(filepath.Clean("./files/" + fileName))
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	f, err := os.OpenFile("./files/"+fileName, os.O_WRONLY|os.O_APPEND, 0)
+	f, err := os.OpenFile(filepath.Clean("./files/"+fileName), os.O_WRONLY|os.O_APPEND, 0)
 	if err != nil {
 		return 0, err
 	}

@@ -50,16 +50,20 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 			return
 		}
 
-		// 读取指定大小
-		reader = io.LimitReader(r, end-start+1)
+		if end != -1 {
+			// 读取指定大小
+			reader = io.LimitReader(r, end-start+1)
+		}
 		ctx.Writer.Header().Set("content-range", fmt.Sprintf("bytes %d-%d/%d", start, end, matter.Size))
 		ctx.AbortWithStatus(http.StatusPartialContent)
 	} else {
 		reader = r
 	}
 
-	// 更新文件下载数
-	c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
+	if end == -1 || end == int64(matter.Parent.Size) {
+		// 更新文件下载数
+		c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
+	}
 
 	io.Copy(ctx.Writer, reader)
 }
