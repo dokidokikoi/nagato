@@ -32,14 +32,13 @@ type Blank struct {
 	Tags      Tags           `json:"tags" gorm:"type:text[];column:tags"`
 	Matters   []Matter       `json:"matters" gorm:"many2many:blank_matters;"`
 	UserID    uint           `json:"user_id"`
-	User      User           `json:"user" gorm:"-"`
+	User      User           `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	CreatedAt time.Time      `json:"created_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 }
 
 type BlankMatter struct {
-	ID       uint `json:"id" gorm:"primary_key"`
 	MatterID uint `json:"matter_id" gorm:"uniqueIndex:idx_blank_matter"`
 	BlankID  uint `json:"blank_id" gorm:"uniqueIndex:idx_blank_matter"`
 }

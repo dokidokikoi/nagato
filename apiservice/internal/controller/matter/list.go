@@ -19,7 +19,8 @@ func (c MatterController) List(ctx *gin.Context) {
 		return
 	}
 
-	res, total, err := c.service.Matter().List(ctx, &model.Matter{}, pageQuery.GetListOption())
+	currentUser := c.GetCurrentUser(ctx)
+	res, total, err := c.service.Matter().List(ctx, &model.Matter{UserID: currentUser.ID}, pageQuery.GetListOption())
 	if err != nil {
 		zaplog.L().Error("获取matter列表失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")

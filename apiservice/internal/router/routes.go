@@ -3,6 +3,7 @@ package router
 import (
 	"nagato/apiservice/internal/controller/blank"
 	"nagato/apiservice/internal/controller/matter"
+	"nagato/apiservice/internal/controller/share"
 	"nagato/apiservice/internal/controller/tag"
 	"nagato/apiservice/internal/controller/user"
 	"nagato/apiservice/internal/middleware"
@@ -30,7 +31,6 @@ func InitRoutes(r *gin.Engine) {
 		fileR.POST("", fileController.GenUploadToken)
 		fileR.HEAD("/temp/:token", fileController.Head)
 		fileR.PUT("/temp/:token", fileController.UploadBigMatter)
-		// fileR.GET("/user/:id", fileController.UserMatterList)
 	}
 
 	matterR := apiR.Group("/matter")
@@ -58,6 +58,16 @@ func InitRoutes(r *gin.Engine) {
 		tagR.GET("", tagController.List)
 		tagR.POST("", tagController.Create)
 		tagR.DELETE("/:id", tagController.Delete)
+	}
+
+	shareR := apiR.Group("/share")
+	{
+		shareController := share.NewShareController()
+		shareR.GET("/:uuid", shareController.Get)
+		shareR.POST("", shareController.Create)
+		shareR.DELETE("/:uuid", shareController.Delete)
+		shareR.PUT("/:uuid", shareController.Save)
+
 	}
 
 	// userR := r.Group("/user")

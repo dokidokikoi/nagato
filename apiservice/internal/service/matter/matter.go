@@ -17,6 +17,7 @@ type IMatterService interface {
 	UploadBigMatter(ctx context.Context, token string, offset uint, data io.Reader) error
 
 	Create(ctx context.Context, example *model.Matter) error
+	CreateCollection(ctx context.Context, examples []*model.Matter) []error
 	Update(ctx context.Context, example *model.Matter) error
 	Del(ctx context.Context, example *model.Matter, option *meta.DeleteOption) error
 	UpdateByWhereNode(ctx context.Context, node *meta.WhereNode, example *model.Matter) error
@@ -27,6 +28,9 @@ type IMatterService interface {
 	CreateResource(ctx context.Context, example *model.Matter) error
 	GetResourceMate(ctx context.Context, name string, version int) (*model.Matter, error)
 	SearchResourceAllVersion(ctx context.Context, name string, from, size int) ([]*model.Matter, error)
+
+	GetAllMatter(examples []*model.Matter) (map[uint]*model.Matter, []error)
+	GetSubMatter(example *model.Matter) ([]*model.Matter, []error)
 }
 
 type matterSrv struct {
@@ -35,6 +39,10 @@ type matterSrv struct {
 
 func (s matterSrv) Create(ctx context.Context, example *model.Matter) error {
 	return s.store.Matters().Create(ctx, example, nil)
+}
+
+func (s matterSrv) CreateCollection(ctx context.Context, examples []*model.Matter) []error {
+	return s.store.Matters().CreateCollection(ctx, examples, nil)
 }
 
 func (s matterSrv) Update(ctx context.Context, example *model.Matter) error {
@@ -64,6 +72,42 @@ func (s matterSrv) List(ctx context.Context, example *model.Matter, option *meta
 
 func (s matterSrv) ListMatter(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, error) {
 	return s.store.Matters().List(ctx, example, option)
+}
+
+func (s matterSrv) GetAllMatter(examples []*model.Matter) (map[uint]*model.Matter, []error) {
+	var errs []error
+	res := make(map[uint]*model.Matter, 0)
+	for _, e := range examples {
+		subs, e := s.GetSubMatter(e)
+		if e != nil {
+			errs = append(errs, e...)
+		}
+		for _, m := range subs {
+			res[m.ID] = m
+		}
+	}
+
+	return res, errs
+}
+
+func (s matterSrv) GetSubMatter(example *model.Matter) ([]*model.Matter, []error) {
+	var errs []error
+	var result []*model.Matter
+	res, err := s.ListMatter(context.Background(), &model.Matter{PUUID: example.UUID}, nil)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	result = append(result, res...)
+	for _, r := range res {
+		re, e := s.GetSubMatter(r)
+		if e != nil {
+			errs = append(errs, e...)
+		}
+		result = append(result, re...)
+	}
+
+	return result, errs
 }
 
 func NewMatterService(store db.Store) IMatterService {

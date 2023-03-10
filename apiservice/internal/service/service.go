@@ -4,6 +4,7 @@ import (
 	"nagato/apiservice/internal/db"
 	"nagato/apiservice/internal/service/blank"
 	"nagato/apiservice/internal/service/matter"
+	"nagato/apiservice/internal/service/share"
 	"nagato/apiservice/internal/service/tag"
 	"nagato/apiservice/internal/service/user"
 )
@@ -13,6 +14,7 @@ type IService interface {
 	User() user.IUserService
 	Blank() blank.IBlankService
 	Tag() tag.ITagService
+	Share() share.IShareService
 }
 
 type service struct {
@@ -33,6 +35,10 @@ func (s service) Blank() blank.IBlankService {
 
 func (s service) Tag() tag.ITagService {
 	return tag.NewTagSrv(s.store)
+}
+
+func (s service) Share() share.IShareService {
+	return share.NewShareSrv(s.store)
 }
 
 func NewService() IService {
