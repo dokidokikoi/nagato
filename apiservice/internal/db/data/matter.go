@@ -20,6 +20,10 @@ func (m matters) Create(ctx context.Context, example *model.Matter, option *meta
 	return m.pg.Matters().Create(ctx, example, option)
 }
 
+func (m matters) CreateMany2Many(ctx context.Context, example *model.Matter, ids interface{}, option *meta.CreateOption) error {
+	return m.pg.Matters().CreateMany2Many(ctx, example, ids, option)
+}
+
 func (m matters) CreateCollection(ctx context.Context, examples []*model.Matter, option *meta.CreateCollectionOption) []error {
 	return m.pg.Matters().CreateCollection(ctx, examples, option)
 }

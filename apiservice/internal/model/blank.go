@@ -30,9 +30,9 @@ type Blank struct {
 	Title     string         `json:"title"`
 	Content   string         `json:"content"`
 	Tags      Tags           `json:"tags" gorm:"type:text[];column:tags"`
-	Matters   []Matter       `json:"matters" gorm:"many2many:blank_matters;"`
+	Matters   []*Matter      `json:"matters" gorm:"many2many:blank_matters;"`
 	UserID    uint           `json:"user_id"`
-	User      User           `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	User      *User          `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	CreatedAt time.Time      `json:"created_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`

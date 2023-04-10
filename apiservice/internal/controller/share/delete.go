@@ -24,7 +24,7 @@ func (s ShareController) Delete(ctx *gin.Context) {
 	share.ExpireInfinity = false
 	share.ExpireTime = time.Now()
 
-	if err := s.service.Share().Save(ctx, share); err != nil {
+	if err := s.service.Share().Save(ctx, share, nil); err != nil {
 		zaplog.L().Error("更新share失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
 		return

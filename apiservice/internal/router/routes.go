@@ -36,10 +36,10 @@ func InitRoutes(r *gin.Engine) {
 	matterR := apiR.Group("/matter")
 	{
 		matterController := matter.NewMatterController()
+		matterR.POST("/dir", matterController.CreateDir)
 		matterR.GET("/:uuid", matterController.Get)
 		matterR.GET("", matterController.List)
 		matterR.PATCH("/:uuid", matterController.Update)
-
 	}
 
 	blankR := apiR.Group("/blank")

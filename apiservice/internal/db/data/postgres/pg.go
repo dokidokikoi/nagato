@@ -24,10 +24,6 @@ func (d *Store) BlankMatters() *blankMatters {
 	return newBlankMatters(d)
 }
 
-func (d *Store) Bridges() *bridges {
-	return newBridges(d)
-}
-
 func (d *Store) Installs() *installs {
 	return newInstalls(d)
 }
@@ -38,6 +34,10 @@ func (d *Store) Matters() *Matters {
 
 func (d *Store) Shares() *shares {
 	return newShares(d)
+}
+
+func (d *Store) ShareMatters() *shareMatters {
+	return newShareMatters(d)
 }
 
 func (d *Store) SmallFileCaches() *smallFileCaches {
@@ -100,9 +100,6 @@ func cleanDatabase(db *gorm.DB) error {
 	if err := db.Migrator().DropTable(&model.Share{}); err != nil {
 		return errors.Wrap(err, "drop share model failed")
 	}
-	if err := db.Migrator().DropTable(&model.Bridge{}); err != nil {
-		return errors.Wrap(err, "drop bridge model failed")
-	}
 	if err := db.Migrator().DropTable(&model.Install{}); err != nil {
 		return errors.Wrap(err, "drop install model failed")
 	}
@@ -132,9 +129,6 @@ func migrateDatabase(db *gorm.DB) error {
 	}
 	if err := db.AutoMigrate(&model.Share{}); err != nil {
 		return errors.Wrap(err, "migrate share model failed")
-	}
-	if err := db.AutoMigrate(&model.Bridge{}); err != nil {
-		return errors.Wrap(err, "migrate bridge model failed")
 	}
 	if err := db.AutoMigrate(&model.Install{}); err != nil {
 		return errors.Wrap(err, "migrate install model failed")

@@ -19,12 +19,18 @@ type UploadMatter struct {
 	Sha256  string `json:"sha256" binding:"required"`
 	Size    uint   `json:"size" binding:"required"`
 	Privacy bool   `json:"privacy"`
-	Path    string `json:"path"`
+	PUUID   string `json:"puuid"`
 }
 
 type UpdateMatter struct {
 	Name    string `json:"name" binding:"required"`
-	Privacy bool   `json:"privacy"  binding:"required"`
-	Path    string `json:"path"  binding:"required"`
+	Privacy bool   `json:"privacy"`
 	Ext     string `json:"ext"  binding:"required"`
+	PUUID   string `json:"puuid" binding:"required"`
+}
+
+type CreateDir struct {
+	Name    string `json:"name" binding:"required"`
+	Privacy bool   `json:"privacy"`
+	PUUID   string `json:"puuid"`
 }

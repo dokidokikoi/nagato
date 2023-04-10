@@ -1,5 +1,5 @@
 ```json
-PUT /resource
+PUT /resource_userID
 {
   "mappings": {
     "properties": {
@@ -58,7 +58,7 @@ PUT /resource
 ```
 
 ```json
-PUT /blank
+PUT /blank_userID
 {
   "mappings": {
     "properties": {

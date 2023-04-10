@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	commonErrors "nagato/common/errors"
+
 	"github.com/dokidokikoi/go-common/core"
 	myErrors "github.com/dokidokikoi/go-common/errors"
 	zaplog "github.com/dokidokikoi/go-common/log/zap"
@@ -16,8 +18,8 @@ import (
 
 func (s ShareController) Create(ctx *gin.Context) {
 	var input CreateShare
-	if ctx.ShouldBindJSON(&input) != nil {
-		zaplog.L().Error("参数校验失败")
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		zaplog.L().Error("参数校验失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrValidation, "")
 		return
 	}
@@ -25,7 +27,7 @@ func (s ShareController) Create(ctx *gin.Context) {
 	if input.Code == "" {
 		input.Code = tools.GetRandStr(4)
 	}
-	if !input.ExpireInfinity && input.ExpireTime.IsZero() {
+	if !input.ExpireInfinity || input.ExpireTime.IsZero() {
 		input.ExpireTime = time.Now().AddDate(0, 0, 7)
 	}
 
@@ -43,18 +45,20 @@ func (s ShareController) Create(ctx *gin.Context) {
 		ExpireInfinity: input.ExpireInfinity,
 		ExpireTime:     input.ExpireTime,
 		Matters: func() []*model.Matter {
-			if len(input.Matters) <= 0 {
-				return nil
-			}
-
 			matters := make([]*model.Matter, len(input.Matters))
-			for i, _ := range input.Matters {
+			for i := range matters {
 				matters[i] = &model.Matter{
 					ID: input.Matters[i],
 				}
 			}
 			return matters
 		}(),
+	}
+
+	if len(input.Matters) <= 0 {
+		zaplog.L().Info("share未包含任何资源")
+		core.WriteResponse(ctx, commonErrors.ApiErrShareNoMatters, "")
+		return
 	}
 
 	err = s.service.Share().Create(ctx, createShare)

@@ -6,6 +6,6 @@ import (
 	db "github.com/dokidokikoi/go-common/db/base"
 )
 
-type IBridgeStore interface {
-	db.BasicCURD[model.Bridge]
+type IShareMatterStore interface {
+	db.BasicCURD[model.ShareMatter]
 }

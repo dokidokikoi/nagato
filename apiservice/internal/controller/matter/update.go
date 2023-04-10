@@ -28,7 +28,6 @@ func (c MatterController) Update(ctx *gin.Context) {
 
 	matter.Name = input.Name
 	matter.Privacy = input.Privacy
-	matter.Path = input.Path
 	matter.Ext = input.Ext
 	err = c.service.Matter().Update(ctx, matter)
 	if err != nil {

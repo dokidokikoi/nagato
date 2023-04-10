@@ -26,14 +26,14 @@ func (b BlankController) Create(ctx *gin.Context) {
 		Content: input.Content,
 		Tags:    input.Tags,
 		UserID:  currentUser.ID,
-		Matters: func() []model.Matter {
+		Matters: func() []*model.Matter {
 			if len(input.Matters) <= 0 {
 				return nil
 			}
 
-			matters := make([]model.Matter, len(input.Matters))
-			for i, _ := range input.Matters {
-				matters[i] = model.Matter{
+			matters := make([]*model.Matter, len(input.Matters))
+			for i := range input.Matters {
+				matters[i] = &model.Matter{
 					ID: input.Matters[i],
 				}
 			}

@@ -43,18 +43,6 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 	size := tools.GetSizeFromHeader(ctx.Request.Header)
 
 	var err error
-	// file, err := ctx.FormFile("file")
-	// if err != nil {
-	// 	zap.L().Sugar().Errorf("从请求获取文件失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
-	// 	ctx.JSON(http.StatusInternalServerError, "")
-	// 	return
-	// }
-	// reader, err := file.Open()
-	// if err != nil {
-	// 	zap.L().Sugar().Errorf("获取文件失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
-	// 	ctx.JSON(http.StatusInternalServerError, "")
-	// 	return
-	// }
 	newUUID, err := exec.Command("uuidgen").Output()
 	if err != nil {
 		zaplog.L().Sugar().Errorf("生成uuid出错, err: %s", err.Error())
@@ -65,11 +53,10 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 	createMatter := &model.Matter{
 		UUID:   strings.Trim(string(newUUID), "\n"),
 		UserID: c.GetCurrentUser(ctx).ID,
-		Name:   strings.ReplaceAll(name, "."+ext, ""),
+		Name:   name,
 		Sha256: hash,
 		Size:   size,
 		Ext:    ext,
-		Path:   "/" + name,
 	}
 
 	err = c.service.Matter().Upload(ctx, createMatter, ctx.Request.Body)
@@ -109,26 +96,23 @@ func (c MatterController) GenUploadToken(ctx *gin.Context) {
 		return
 	}
 	ext := strings.TrimLeft(path.Ext(input.Name), ".")
-	if input.Path != "" {
-		// TODO: 对路径中的文件夹校验是否存在
-		// 不存在的情况需要新建文件夹
-		if input.Path[len(input.Path)-1:] != "/" {
-			input.Path = input.Path + "/"
-		}
-		if input.Path[0:1] == "/" {
-			input.Path = input.Path[1:]
-		}
-	}
+	currentUser := c.GetCurrentUser(ctx)
+
 	// TODO: 同一用户下不能存在同一路径的文件
-	// TODO: 获取 PUUID 并写入数据库
+	_, err = c.service.Matter().Get(ctx, &model.Matter{PUUID: input.PUUID, Name: input.Name, Ext: ext, UserID: currentUser.ID}, nil)
+	if err == nil {
+		zaplog.L().Sugar().Errorf("目录下存在重名文件, err: %s", err.Error())
+		core.WriteResponse(ctx, commonErrors.ApiErrFolderRepeatFile, nil)
+		return
+	}
 	createMatter := &model.Matter{
 		UUID:    strings.Trim(string(newUUID), "\n"),
-		UserID:  c.GetCurrentUser(ctx).ID,
+		UserID:  currentUser.ID,
 		Name:    strings.ReplaceAll(input.Name, "."+ext, ""),
 		Sha256:  input.Sha256,
 		Size:    input.Size,
 		Ext:     ext,
-		Path:    "/" + input.Path + input.Name,
+		PUUID:   input.PUUID,
 		Privacy: input.Privacy,
 	}
 

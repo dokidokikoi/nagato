@@ -2,10 +2,12 @@ package matter
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"nagato/apiservice/internal/db"
 	"nagato/apiservice/internal/model"
 	"nagato/apiservice/stream"
+	"path/filepath"
 
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
@@ -31,6 +33,7 @@ type IMatterService interface {
 
 	GetAllMatter(examples []*model.Matter) (map[uint]*model.Matter, []error)
 	GetSubMatter(example *model.Matter) ([]*model.Matter, []error)
+	GetMatterPath(example *model.Matter) (string, error)
 }
 
 type matterSrv struct {
@@ -65,6 +68,9 @@ func (s matterSrv) List(ctx context.Context, example *model.Matter, option *meta
 	res, err := s.store.Matters().List(ctx, example, option)
 	if err != nil {
 		return nil, 0, err
+	}
+	if option == nil {
+		option = &meta.ListOption{}
 	}
 	total, _ := s.store.Matters().Count(ctx, example, &option.GetOption)
 	return res, total, nil
@@ -108,6 +114,23 @@ func (s matterSrv) GetSubMatter(example *model.Matter) ([]*model.Matter, []error
 	}
 
 	return result, errs
+}
+
+func (s matterSrv) GetMatterPath(example *model.Matter) (string, error) {
+	if example.PUUID == "" {
+		return "/", nil
+	}
+
+	pMatter, err := s.Get(context.Background(), &model.Matter{UUID: example.PUUID}, nil)
+	if err != nil {
+		return "", err
+	}
+	p, err := s.GetMatterPath(pMatter)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(p, fmt.Sprintf("%s.%s", example.Name, example.Ext)), nil
 }
 
 func NewMatterService(store db.Store) IMatterService {

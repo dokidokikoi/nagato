@@ -27,10 +27,6 @@ func (d dataCenter) BlankMatters() db.IBlankMatterStore {
 	return d.pg.BlankMatters()
 }
 
-func (d dataCenter) Bridges() db.IBridgeStore {
-	return d.pg.Bridges()
-}
-
 func (d dataCenter) Installs() db.IInstallStore {
 	return d.pg.Installs()
 }
@@ -45,6 +41,10 @@ func (d *dataCenter) Matters() db.IMatterStore {
 
 func (d dataCenter) Shares() db.IShareStore {
 	return d.pg.Shares()
+}
+
+func (d dataCenter) ShareMatters() db.IShareMatterStore {
+	return d.pg.ShareMatters()
 }
 
 func (d dataCenter) SmallFileCaches() db.ISmallFileCacheStore {

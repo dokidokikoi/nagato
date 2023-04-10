@@ -24,15 +24,28 @@ func (s ShareController) Save(ctx *gin.Context) {
 		return
 	}
 
-	share, err := s.service.Share().Get(ctx, &model.Share{UUID: uuid, Code: input.Code}, &meta.GetOption{Preload: []string{"Matters"}})
+	share, err := s.service.Share().
+		Get(ctx, &model.Share{UUID: uuid}, &meta.GetOption{Preload: []string{"Matters"}})
 	if err != nil {
 		zaplog.L().Error("获取share失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
 		return
 	}
+	if share.Code != input.Code {
+		zaplog.L().Error("提取码错误")
+		core.WriteResponse(ctx, commonErrors.ApiErrShareCode, "")
+		return
+	}
 
+	if s.service.Share().IsExpired(ctx, share) {
+		core.WriteResponse(ctx, commonErrors.ApiErrShareExpired, nil)
+		return
+	}
+
+	// 保存到的文件夹，没有就保存在根目录
 	if input.PUUID != "" {
-		_, err := s.service.Matter().Get(ctx, &model.Matter{UUID: input.PUUID, Dir: true}, &meta.GetOption{Include: []string{"uuid", "dir"}})
+		_, err := s.service.Matter().
+			Get(ctx, &model.Matter{UUID: input.PUUID, Dir: true}, &meta.GetOption{Include: []string{"uuid", "dir"}})
 		if err != nil {
 			zaplog.L().Error("获取文件夹Matter失败", zap.Error(err))
 			core.WriteResponse(ctx, commonErrors.ApiErrFolderNotFound, "")
@@ -40,39 +53,59 @@ func (s ShareController) Save(ctx *gin.Context) {
 		}
 	}
 
-	m, errs := s.service.Matter().GetAllMatter(share.Matters)
-	if errs != nil {
-		zaplog.L().Error("获取matters树形结构失败", zap.Errors("errs", errs))
+	m, err := s.service.Share().Receive(share.Matters, input.Matters)
+	if err != nil {
+		zaplog.L().Error("获取matters树形结构失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
 	}
 	currentUser := s.GetCurrentUser(ctx)
 	saveMatter := make([]*model.Matter, 0)
-	for _, i := range input.Matters {
-		m, ok := m[i]
-		if !ok {
-			continue
-		}
-		newUUID, err := exec.Command("uuidgen").Output()
-		if err != nil {
-			zaplog.L().Sugar().Errorf("生成uuid出错, err: %s", err.Error())
-			core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
-			continue
-		}
 
-		saveMatter = append(saveMatter, &model.Matter{
-			PUUID:  input.PUUID,
-			UserID: currentUser.ID,
-			UUID:   strings.Trim(string(newUUID), "\n"),
-			Sha256: m.Sha256,
-			Name:   m.Name,
-			Dir:    m.Dir,
-			Size:   m.Size,
-		})
+	// 递归获取需要存储的文件信息
+	var getAllSaveMatters func(matters []*model.Matter) error
+	getAllSaveMatters = func(matters []*model.Matter) error {
+		if len(matters) == 0 {
+			return nil
+		}
+		for _, m := range matters {
+			newUUID, err := exec.Command("uuidgen").Output()
+			if err != nil {
+				zaplog.L().Sugar().Errorf("生成uuid出错, err: %s", err.Error())
+				return err
+			}
+
+			saveMatter = append(saveMatter, &model.Matter{
+				PUUID:  input.PUUID,
+				UserID: currentUser.ID,
+				UUID:   strings.Trim(string(newUUID), "\n"),
+				Sha256: m.Sha256,
+				Name:   m.Name,
+				Dir:    m.Dir,
+				Size:   m.Size,
+			})
+
+			subMatters, _, err := s.service.Matter().List(ctx, &model.Matter{PUUID: m.UUID}, nil)
+			if err != nil {
+				zaplog.L().Sugar().Errorf("生成matter列表出错, err: %s", err.Error())
+				return err
+			}
+
+			if err := getAllSaveMatters(subMatters); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
-	errs = s.service.Matter().CreateCollection(ctx, saveMatter)
+	if err := getAllSaveMatters(m); err != nil {
+		zaplog.L().Error("获取matters失败", zap.Error(err))
+		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
+		return
+	}
+
+	errs := s.service.Matter().CreateCollection(ctx, saveMatter)
 	if errs != nil {
-		zaplog.L().Error("获取matters树形结构失败", zap.Errors("errs", errs))
+		zaplog.L().Error("保存matters列表失败", zap.Errors("errs", errs))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
 		return
 	}

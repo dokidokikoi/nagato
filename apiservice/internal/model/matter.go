@@ -17,7 +17,7 @@ type Matter struct {
 	Sha256    string         `json:"sha256" gorm:"index:idx_matter_sha256;"`
 	Size      uint           `json:"size" gorm:"default:0"`
 	Privacy   bool           `json:"privacy"`
-	Path      string         `json:"path" gorm:"-"`
+	Path      string         `json:"path" gorm:"uniqueIndex:idx_matter_path"`
 	Ext       string         `json:"ext"`
 	Times     uint           `json:"times" gorm:"default:0"`
 	Parent    *Matter        `json:"parent,omitempty" gorm:"-"`

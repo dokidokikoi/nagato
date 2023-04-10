@@ -27,6 +27,8 @@ func (c MatterController) Get(ctx *gin.Context) {
 		return
 	}
 
+	matter.Path, _ = c.service.Matter().GetMatterPath(matter)
+
 	matter.Children = children
 	core.WriteResponse(ctx, nil, matter)
 }
