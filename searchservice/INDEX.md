@@ -1,3 +1,6 @@
+[toc]
+
+### 创建索引
 ```json
 PUT /resource_userID
 {
@@ -95,5 +98,78 @@ PUT /blank_userID
       }
     }
   }
+}
+```
+
+### 查询语句
+```json
+get /resource/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "type": {
+              "value": "playlist"
+            }
+          }
+        },
+        {
+          "term": {
+            "tags": {
+              "value": "golang"
+            }
+          }
+        },
+        {
+          "term": {
+            "tags": {
+              "value": "elasticsearch"
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match_phrase_prefix": {
+                  "title": {
+                    "query": "资源管理 golang",
+                    "max_expansions": 50,
+                    "slop": 50
+                  }
+                }
+              },
+              {
+                "match_phrase_prefix": {
+                  "content": {
+                    "query": "资源管理 golang",
+                    "max_expansions": 50,
+                    "slop": 50
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "range": {
+            "created_at": {
+              "gte": "2022-01-01T00:00:00",   // 大于等于指定时间
+              "lt": "2022-02-01T00:00:00"     // 小于指定时间
+            }
+          }
+        }
+      ]
+    }
+  },
+  "highlight" : {
+		"fields" : {
+			"name" : { "number_of_fragments" : 0 }
+		}
+	},
+	"size" : 25,
+	"sort" : [ { "_score" : "desc" }, { "_doc" : "asc" } ]
 }
 ```
