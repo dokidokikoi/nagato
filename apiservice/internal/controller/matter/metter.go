@@ -25,7 +25,6 @@ type UploadMatter struct {
 type UpdateMatter struct {
 	Name    string `json:"name" binding:"required"`
 	Privacy bool   `json:"privacy"`
-	Ext     string `json:"ext"  binding:"required"`
 	PUUID   string `json:"puuid" binding:"required"`
 }
 

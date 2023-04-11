@@ -2,6 +2,8 @@ package matter
 
 import (
 	"nagato/apiservice/internal/model"
+	"path"
+	"strings"
 
 	"github.com/dokidokikoi/go-common/core"
 	myErrors "github.com/dokidokikoi/go-common/errors"
@@ -19,7 +21,8 @@ func (c MatterController) Update(ctx *gin.Context) {
 		return
 	}
 
-	matter, err := c.service.Matter().Get(ctx, &model.Matter{UUID: uuid}, nil)
+	currentUser := c.GetCurrentUser(ctx)
+	matter, err := c.service.Matter().Get(ctx, &model.Matter{UUID: uuid, UserID: currentUser.ID}, nil)
 	if err != nil {
 		zaplog.L().Error("获取matter失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
@@ -28,7 +31,8 @@ func (c MatterController) Update(ctx *gin.Context) {
 
 	matter.Name = input.Name
 	matter.Privacy = input.Privacy
-	matter.Ext = input.Ext
+	matter.Ext = strings.TrimLeft(path.Ext(input.Name), ".")
+	c.service.Matter().SetMatterPath(matter)
 	err = c.service.Matter().Update(ctx, matter)
 	if err != nil {
 		zaplog.L().Error("更新matter失败", zap.Error(err))

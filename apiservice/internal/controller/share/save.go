@@ -74,7 +74,7 @@ func (s ShareController) Save(ctx *gin.Context) {
 				return err
 			}
 
-			saveMatter = append(saveMatter, &model.Matter{
+			v := &model.Matter{
 				PUUID:  input.PUUID,
 				UserID: currentUser.ID,
 				UUID:   strings.Trim(string(newUUID), "\n"),
@@ -82,7 +82,12 @@ func (s ShareController) Save(ctx *gin.Context) {
 				Name:   m.Name,
 				Dir:    m.Dir,
 				Size:   m.Size,
-			})
+			}
+			err = s.service.Matter().SetMatterPath(v)
+			if err != nil {
+				return err
+			}
+			saveMatter = append(saveMatter, v)
 
 			subMatters, _, err := s.service.Matter().List(ctx, &model.Matter{PUUID: m.UUID}, nil)
 			if err != nil {

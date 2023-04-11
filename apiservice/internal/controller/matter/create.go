@@ -1,9 +1,12 @@
 package matter
 
 import (
+	"errors"
 	"nagato/apiservice/internal/model"
 	"os/exec"
 	"strings"
+
+	commonErrors "nagato/common/errors"
 
 	"github.com/dokidokikoi/go-common/core"
 	myErrors "github.com/dokidokikoi/go-common/errors"
@@ -30,10 +33,16 @@ func (c MatterController) CreateDir(ctx *gin.Context) {
 		UserID: currentUser.ID,
 		Name:   input.Name,
 		PUUID:  input.PUUID,
+		Dir:    true,
 	}
 
+	c.service.Matter().SetMatterPath(createMatter)
 	if err := c.service.Matter().Create(ctx, createMatter); err != nil {
 		zaplog.L().Sugar().Errorf("保存matter出错, err: %s", err.Error())
+		if errors.Is(err, myErrors.ErrNameDuplicate) {
+			core.WriteResponse(ctx, commonErrors.ApiErrFolderRepeatFile, "")
+			return
+		}
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
 		return
 	}

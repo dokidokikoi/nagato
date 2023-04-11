@@ -58,6 +58,8 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 		Size:   size,
 		Ext:    ext,
 	}
+	// 计算文件路径
+	c.service.Matter().SetMatterPath(createMatter)
 
 	err = c.service.Matter().Upload(ctx, createMatter, ctx.Request.Body)
 	if err != nil {
@@ -98,23 +100,18 @@ func (c MatterController) GenUploadToken(ctx *gin.Context) {
 	ext := strings.TrimLeft(path.Ext(input.Name), ".")
 	currentUser := c.GetCurrentUser(ctx)
 
-	// TODO: 同一用户下不能存在同一路径的文件
-	_, err = c.service.Matter().Get(ctx, &model.Matter{PUUID: input.PUUID, Name: input.Name, Ext: ext, UserID: currentUser.ID}, nil)
-	if err == nil {
-		zaplog.L().Sugar().Errorf("目录下存在重名文件, err: %s", err.Error())
-		core.WriteResponse(ctx, commonErrors.ApiErrFolderRepeatFile, nil)
-		return
-	}
 	createMatter := &model.Matter{
 		UUID:    strings.Trim(string(newUUID), "\n"),
 		UserID:  currentUser.ID,
-		Name:    strings.ReplaceAll(input.Name, "."+ext, ""),
+		Name:    input.Name,
 		Sha256:  input.Sha256,
 		Size:    input.Size,
 		Ext:     ext,
 		PUUID:   input.PUUID,
 		Privacy: input.Privacy,
 	}
+	// 计算文件路径
+	c.service.Matter().SetMatterPath(createMatter)
 
 	token, err := c.service.Matter().GenUploadToken(ctx, createMatter)
 	if err != nil {

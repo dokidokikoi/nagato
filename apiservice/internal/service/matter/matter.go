@@ -2,7 +2,6 @@ package matter
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"nagato/apiservice/internal/db"
 	"nagato/apiservice/internal/model"
@@ -33,7 +32,8 @@ type IMatterService interface {
 
 	GetAllMatter(examples []*model.Matter) (map[uint]*model.Matter, []error)
 	GetSubMatter(example *model.Matter) ([]*model.Matter, []error)
-	GetMatterPath(example *model.Matter) (string, error)
+	SetMatterPath(example *model.Matter) error
+	GetMatterPath(PUUID, name string, userID uint) (string, error)
 }
 
 type matterSrv struct {
@@ -116,21 +116,32 @@ func (s matterSrv) GetSubMatter(example *model.Matter) ([]*model.Matter, []error
 	return result, errs
 }
 
-func (s matterSrv) GetMatterPath(example *model.Matter) (string, error) {
+func (s matterSrv) SetMatterPath(example *model.Matter) error {
 	if example.PUUID == "" {
-		return "/", nil
+		example.Path = filepath.Join("/", example.Name)
+		return nil
 	}
 
-	pMatter, err := s.Get(context.Background(), &model.Matter{UUID: example.PUUID}, nil)
+	pMatter, err := s.Get(context.Background(), &model.Matter{UUID: example.PUUID, UserID: example.UserID, Dir: true}, nil)
+	if err != nil {
+		return err
+	}
+
+	example.Path = filepath.Join(pMatter.Path, example.Name)
+	return nil
+}
+
+func (s matterSrv) GetMatterPath(PUUID, name string, userID uint) (string, error) {
+	if PUUID == "" {
+		return filepath.Join("/", name), nil
+	}
+
+	pMatter, err := s.Get(context.Background(), &model.Matter{UUID: PUUID, UserID: userID, Dir: true}, nil)
 	if err != nil {
 		return "", err
 	}
-	p, err := s.GetMatterPath(pMatter)
-	if err != nil {
-		return "", err
-	}
 
-	return filepath.Join(p, fmt.Sprintf("%s.%s", example.Name, example.Ext)), nil
+	return filepath.Join(pMatter.Path, name), nil
 }
 
 func NewMatterService(store db.Store) IMatterService {

@@ -50,7 +50,7 @@ func (c UserController) Login(ctx *gin.Context) {
 
 func GenerateToken(user *model.User) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(60 * 60 * 24 * time.Second)
+	expireTime := nowTime.Add(364 * 60 * 60 * 24 * time.Second)
 	issuer := "harukaze"
 	claims := myJwt.CustomClaims{
 		ID:    user.ID,
