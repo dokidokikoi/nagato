@@ -1,0 +1,20 @@
+// 定义我们接口的版本
+syntax = "proto3";
+// 定义包名称
+package api;
+// 定义go安装包名称
+option go_package = "/;api";
+// 定义我们的服务
+service Api {
+    // 验证用户身份
+    rpc Authenticate (AuthenticateReq) returns (AuthenticateResp);
+}
+
+message AuthenticateReq {
+    string token = 1;
+}
+
+message AuthenticateResp {
+    bool pass = 1;
+    string userJson = 2;
+}

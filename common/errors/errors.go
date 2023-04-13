@@ -14,6 +14,8 @@ var (
 	ErrShareExpired     = errors.New("分享已过期")
 	ErrShareCode        = errors.New("提取码错误")
 	ErrShareNoMatters   = errors.New("未选择分享文件")
+	ErrESCreateIndex    = errors.New("创建索引失败")
+	ErrESCreateDoc      = errors.New("创建文档失败")
 )
 
 var (
@@ -23,4 +25,6 @@ var (
 	ApiErrShareExpired     = myErrors.ClientFailed(ErrShareExpired.Error(), code.ErrShareExpired)
 	ApiErrShareCode        = myErrors.ClientFailed(ErrShareCode.Error(), code.ErrShareCode)
 	ApiErrShareNoMatters   = myErrors.ClientFailed(ErrShareNoMatters.Error(), code.ErrShareNoMatters)
+	ApiErrESCreateIndex    = myErrors.ClientFailed(ErrESCreateIndex.Error(), code.ErrESCreateIndex)
+	ApiErrESCreateDoc      = myErrors.ClientFailed(ErrESCreateDoc.Error(), code.ErrESCreateDoc)
 )

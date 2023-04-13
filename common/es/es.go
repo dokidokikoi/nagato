@@ -4,8 +4,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-const ES_SERVER = "127.0.0.1:9200"
-
 type Metadata struct {
 	Name    string
 	Version int

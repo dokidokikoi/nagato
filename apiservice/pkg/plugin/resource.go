@@ -1,4 +1,4 @@
-package plugin
+package api
 
 type Resource struct {
 	Name    string `json:"name"`

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	commonErrors "nagato/common/errors"
 )
 
 func (cli *EsClient[T]) GetDoc(index, docId string) (*T, error) {
@@ -28,7 +30,10 @@ func (cli *EsClient[T]) GetDoc(index, docId string) (*T, error) {
 }
 
 func (cli *EsClient[T]) CreateDocByID(index, id string, body io.Reader) error {
-	_, err := cli.Client.Create(index, id, body)
+	resp, err := cli.Client.Create(index, id, body)
+	if resp.StatusCode != 201 {
+		return commonErrors.ErrESCreateDoc
+	}
 	return err
 }
 

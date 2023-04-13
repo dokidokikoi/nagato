@@ -7,4 +7,7 @@ const (
 	ErrShareExpired
 	ErrShareCode
 	ErrShareNoMatters
+
+	ErrESCreateIndex
+	ErrESCreateDoc
 )
