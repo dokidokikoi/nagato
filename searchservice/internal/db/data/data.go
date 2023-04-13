@@ -1,6 +1,7 @@
 package data
 
 import (
+	"nagato/searchservice/internal/db"
 	"nagato/searchservice/internal/db/data/es"
 	"nagato/searchservice/internal/db/data/redis"
 	"sync"
@@ -14,6 +15,14 @@ var (
 type dataCenter struct {
 	esCli *es.Store
 	cli   *redis.Store
+}
+
+func (d dataCenter) Blank() db.IBlankStore {
+	return newBlanks(d)
+}
+
+func (d dataCenter) Resource() db.IResourceStore {
+	return newResources(d)
 }
 
 func GetDataCenter() *dataCenter {

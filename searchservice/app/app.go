@@ -9,6 +9,7 @@ import (
 	"nagato/searchservice/internal/db/data/es"
 	"nagato/searchservice/rpc/server"
 
+	"github.com/dokidokikoi/go-common/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
@@ -43,7 +44,10 @@ func (a App) Run() {
 	)
 	pb.RegisterSearchServer(grpcSrv, s)
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(middleware.Logger())
+	router.Use(gin.Recovery())
+	router.Use(middleware.Cors())
 	search.InitRoute(router)
 	httpSrv := http.NewServer(http.Address(fmt.Sprintf("%s:%d", config.Config().ServerConfig.Host, config.Config().ServerConfig.Port)))
 	httpSrv.HandlePrefix("", router)

@@ -19,6 +19,14 @@ var (
 	once      sync.Once
 )
 
+func (s Store) Blanks() *blanks {
+	return newBlanks(s.cli)
+}
+
+func (s Store) Resources() *resources {
+	return newResources(s.cli)
+}
+
 func GetEsFactory() (*Store, error) {
 	once.Do(func() {
 		cert, _ := os.ReadFile(config.Config().EsConfig.Cert)
