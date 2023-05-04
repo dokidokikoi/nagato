@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 )
 
 func (cli *EsClient[T]) SearchDoc(index string, body io.Reader) (*SearchResult[T], error) {
@@ -13,11 +12,12 @@ func (cli *EsClient[T]) SearchDoc(index string, body io.Reader) (*SearchResult[T
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("es状态码不为200, code: %d", resp.StatusCode)
-	}
-
 	result, _ := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	if resp.StatusCode > 400 {
+		return nil, fmt.Errorf("es状态码不为200, error: %s", string(result))
+	}
 
 	res := SearchResult[T]{}
 	err = json.Unmarshal(result, &res)

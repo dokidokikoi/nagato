@@ -1,6 +1,7 @@
 package es
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,6 +15,7 @@ func (cli *EsClient[T]) GetDoc(index, docId string) (*T, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("es状态码不为200, code: %d", resp.StatusCode)
 	}
@@ -31,6 +33,7 @@ func (cli *EsClient[T]) GetDoc(index, docId string) (*T, error) {
 
 func (cli *EsClient[T]) CreateDocByID(index, id string, body io.Reader) error {
 	resp, err := cli.Client.Create(index, id, body)
+	defer resp.Body.Close()
 	if resp.StatusCode != 201 {
 		return commonErrors.ErrESCreateDoc
 	}
@@ -50,4 +53,30 @@ func (cli *EsClient[T]) DelDoc(index, id string) error {
 func (cli *EsClient[T]) BulkDoc(index string, body io.Reader) error {
 	_, err := cli.Client.Bulk(body, cli.Client.Bulk.WithIndex(index))
 	return err
+}
+
+func (cli *EsClient[T]) BulkBatchDoc(index string, data [][]byte) []error {
+	var errs []error
+	for i := range data {
+		res, err := cli.Client.Bulk(bytes.NewBuffer(data[i]), cli.Client.Bulk.WithIndex(index))
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if res.IsError() {
+			var raw map[string]interface{}
+			if err := json.NewDecoder(res.Body).Decode(&raw); err != nil {
+				errs = append(errs, err)
+			} else {
+				errs = append(errs, fmt.Errorf("  Error: [%d] %s: %s",
+					res.StatusCode,
+					raw["error"].(map[string]interface{})["type"],
+					raw["error"].(map[string]interface{})["reason"],
+				))
+			}
+		}
+		res.Body.Close()
+	}
+
+	return errs
 }

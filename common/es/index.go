@@ -10,6 +10,7 @@ func (cli *EsClient[T]) CreateIndex(index string, body io.Reader) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return commonErrors.ErrESCreateIndex
 	}
