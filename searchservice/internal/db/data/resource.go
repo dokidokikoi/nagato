@@ -19,7 +19,7 @@ func (r resources) CreateIndices(userID uint, indexReq string) error {
 	return r.esCli.Resources().CreateIndex(fmt.Sprintf("resource_%d", userID), strings.NewReader(indexReq))
 }
 
-func (r resources) SearchBlank(userID uint, req commonEsModel.ResourceReq) ([]commonEs.Result[commonEsModel.Resource], error) {
+func (r resources) SearchResource(userID uint, req commonEsModel.ResourceReq) ([]commonEs.Result[commonEsModel.Resource], error) {
 	return r.esCli.Resources().Search(fmt.Sprintf("resource_%d", userID), req)
 }
 

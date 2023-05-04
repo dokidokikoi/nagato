@@ -6,13 +6,22 @@ import (
 )
 
 type IService interface {
+	Blank() IBlankService
+	Resource() IResourceService
 }
 
 type srv struct {
 	store db.Store
 }
 
-func NewSrv() IService {
+func (s srv) Blank() IBlankService {
+	return newBlankSrv(s.store)
+}
 
+func (s srv) Resource() IResourceService {
+	return newResourceSrv(s.store)
+}
+
+func NewSrv() IService {
 	return &srv{store: data.GetDataCenter()}
 }

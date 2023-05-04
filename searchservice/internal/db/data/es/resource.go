@@ -3,6 +3,7 @@ package es
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	commonEs "nagato/common/es"
 	commonEsModel "nagato/common/es/model"
 
@@ -15,46 +16,37 @@ type resources struct {
 
 func (r resources) Search(index string, req commonEsModel.ResourceReq) ([]commonEs.Result[commonEsModel.Resource], error) {
 	body := &bytes.Buffer{}
-	// blank 查找
+
 	var elems []elm
 	terms := make(map[string][]interface{})
+	if req.Ext != "" {
+		terms["ext"] = []interface{}{req.Ext}
+	}
+	if req.Dir != nil {
+		terms["dir"] = []interface{}{req.Dir}
+	}
+	if req.Sha256 != "" {
+		terms["sha256"] = []interface{}{req.Sha256}
+	}
+	terms["privacy"] = []interface{}{req.Privacy}
 
-	terms["matters.ext"] = []interface{}{req.Ext}
-	terms["matters.dir"] = []interface{}{req.Dir}
-	terms["matters.privacy"] = []interface{}{req.Privacy}
-	terms["matters.sha256"] = []interface{}{req.Sha256}
 	elems = append(elems, BuildTerms(terms)...)
-	elems = append(elems, BuildMatch("matters.al_text", req.Text))
+	elems = append(elems, BuildMatch("all_text", req.Text))
 
-	elems = append(elems, BuildRange("matters.size", req.TimesGte, req.TimesLt))
-	elems = append(elems, BuildRange("matters.update_at", req.UpdatedAtGte, req.UpdatedAtLt))
-	elems = append(elems, BuildRange("matters.create_at", req.CreatedAtGte, req.CreatedAtLt))
-
-	// 嵌套对象查找
-	var nestedElems []elm
-	nestedTerms := make(map[string][]interface{})
-
-	nestedTerms["children.ext"] = []interface{}{req.Ext}
-	nestedTerms["children.dir"] = []interface{}{req.Dir}
-	nestedTerms["children.privacy"] = []interface{}{req.Privacy}
-	nestedTerms["children.sha256"] = []interface{}{req.Sha256}
-	nestedElems = append(nestedElems, BuildTerms(nestedTerms)...)
-	nestedElems = append(nestedElems, BuildMatch("children.al_text", req.Text))
-
-	nestedElems = append(nestedElems, BuildRange("children.size", req.TimesGte, req.TimesLt))
-	nestedElems = append(nestedElems, BuildRange("children.update_at", req.UpdatedAtGte, req.UpdatedAtLt))
-	nestedElems = append(nestedElems, BuildRange("children.create_at", req.CreatedAtGte, req.CreatedAtLt))
+	elems = append(elems, BuildRange("times", req.TimesGte, req.TimesLt))
+	elems = append(elems, BuildTimeRange("update_at", req.UpdatedAtGte, req.UpdatedAtLt))
+	elems = append(elems, BuildTimeRange("create_at", req.CreatedAtGte, req.CreatedAtLt))
 
 	query := BulidQuery(
-		BuildBool(
-			nil,
-			[]elm{
-				BuildBool(elems, nil),
-				BuildNested(req.Nested, BulidQuery(BuildBool(nestedElems, nil), nil)),
-			},
-		),
+		BuildBool(elems, nil),
 		BuildHighLight(req.Highlight),
+		req.Page,
+		req.PageSize,
+		req.Select,
 	)
+
+	res, _ := json.Marshal(query)
+	fmt.Println(string(res))
 
 	if err := json.NewEncoder(body).Encode(query); err != nil {
 		panic(err)

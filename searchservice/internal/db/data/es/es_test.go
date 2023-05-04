@@ -34,10 +34,10 @@ func TestEs(t *testing.T) {
 	elems = append(elems, BuildTerms(terms)...)
 	elems = append(elems, BuildBool(nil, BuildMatchs(map[string]string{"title": "资源管理 golang", "content": "资源管理 golang"})))
 
-	b, _ := json.Marshal(BulidQuery(BuildBool(elems, nil), BuildHighLight([]string{"title"})))
+	b, _ := json.Marshal(BulidQuery(BuildBool(elems, nil), BuildHighLight([]string{"title"}), 0, 0, nil))
 	fmt.Println(string(b))
 
-	if err := json.NewEncoder(body).Encode(BulidQuery(BuildBool(elems, nil), BuildHighLight([]string{"title"}))); err != nil {
+	if err := json.NewEncoder(body).Encode(BulidQuery(BuildBool(elems, nil), BuildHighLight([]string{"title"}), 0, 0, nil)); err != nil {
 		panic(err)
 	}
 

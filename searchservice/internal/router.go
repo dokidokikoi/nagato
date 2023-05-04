@@ -2,19 +2,22 @@ package search
 
 import (
 	"nagato/searchservice/internal/controller/blank"
+	"nagato/searchservice/internal/controller/resource"
 
 	"github.com/gin-gonic/gin"
 )
 
 func InitRoute(r gin.IRouter) {
+	// r.Use(middleware.Auth())
 	blankR := r.Group("/blank")
 	{
 		balnkCtrl := blank.NewController()
-		blankR.GET("", balnkCtrl.Test)
+		blankR.POST("", balnkCtrl.Search)
 	}
 
 	resourceR := r.Group("/resource")
 	{
-		resourceR.GET("")
+		resourceCtrl := resource.NewController()
+		resourceR.POST("", resourceCtrl.Search)
 	}
 }

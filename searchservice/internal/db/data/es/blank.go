@@ -3,6 +3,7 @@ package es
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	commonEs "nagato/common/es"
 	commonEsModel "nagato/common/es/model"
 
@@ -26,34 +27,32 @@ func (bl blanks) SearchBlank(index string, req commonEsModel.BlankReq) ([]common
 		terms["tags"][i] = v
 	}
 	elems = append(elems, BuildTerms(terms)...)
-	elems = append(elems, BuildBool(nil, []elm{BuildMatch("all_text", req.Text)}))
-	elems = append(elems, BuildRange("update_at", req.UpdatedAtGte, req.UpdatedAtLt))
-	elems = append(elems, BuildRange("create_at", req.CreatedAtGte, req.CreatedAtLt))
+	elems = append(elems, BuildMatch("all_text", req.Text))
+	elems = append(elems, BuildTimeRange("update_at", req.UpdatedAtGte, req.UpdatedAtLt))
+	elems = append(elems, BuildTimeRange("create_at", req.CreatedAtGte, req.CreatedAtLt))
 
-	// 嵌套对象查找
-	var nestedElems []elm
-	nestedTerms := make(map[string][]interface{})
-	nestedTerms["matters.ext"] = []interface{}{req.Ext}
-	nestedTerms["matters.dir"] = []interface{}{req.Dir}
-	nestedTerms["matters.privacy"] = []interface{}{req.Privacy}
-	nestedTerms["matters.sha256"] = []interface{}{req.Sha256}
-	nestedElems = append(nestedElems, BuildTerms(nestedTerms)...)
-	nestedElems = append(nestedElems, BuildMatch("matters.al_text", req.Text))
+	var shouldElems []elm
+	shouldTerms := make(map[string][]interface{})
 
-	nestedElems = append(nestedElems, BuildRange("matters.size", req.TimesGte, req.TimesLt))
-	nestedElems = append(nestedElems, BuildRange("matters.update_at", req.UpdatedAtGte, req.UpdatedAtLt))
-	nestedElems = append(nestedElems, BuildRange("matters.create_at", req.CreatedAtGte, req.CreatedAtLt))
+	if len(req.MatterIDs) > 0 {
+		shouldTerms["matter_ids"] = make([]interface{}, len(req.MatterIDs))
+		for i, v := range req.MatterIDs {
+			shouldTerms["matter_ids"][i] = v
+		}
+		shouldElems = append(shouldElems, BuildOrTerms("matter_ids", req.MatterIDs))
+	}
+
+	elems = append(elems, BuildBool(nil, shouldElems))
 
 	query := BulidQuery(
-		BuildBool(
-			nil,
-			[]elm{
-				BuildBool(elems, nil),
-				BuildNested(req.Nested, BulidQuery(BuildBool(nestedElems, nil), nil)),
-			},
-		),
+		BuildBool(elems, nil),
 		BuildHighLight(req.Highlight),
+		req.Page,
+		req.PageSize,
+		req.Select,
 	)
+	res, _ := json.Marshal(query)
+	fmt.Println(string(res))
 
 	if err := json.NewEncoder(body).Encode(query); err != nil {
 		panic(err)
@@ -78,43 +77,3 @@ func (bl blanks) CreateDocWithID(index string, id string, req commonEsModel.Blan
 func newBlanks(cli *elasticsearch.Client) *blanks {
 	return &blanks{commonEs.EsClient[commonEsModel.Blank]{Client: cli}}
 }
-
-var blankIndex = `
-{
-	"mappings": {
-	  "properties": {
-		"id": {
-		  "type": "long"
-		},
-		"type": {
-		  "type": "keyword"
-		},
-		"title": {
-		  "type": "text",
-		  "analyzer": "ik_smart",
-		  "copy_to": ["all_text^2"]
-		},
-		"content": {
-		  "type": "text",
-		  "analyzer": "ik_smart",
-		  "copy_to": ["all_text"]
-		},
-		"tags": {
-		  "type": "keyword"
-		},
-		"matter_ids": {
-		  "type": "long"
-		},
-		"updated_at": {
-		  "type": "date"
-		},
-		"created_at": {
-		  "type": "date"
-		},
-		"all_text": {
-		  "type": "text"
-		}
-	  }
-	}
-  }
-`

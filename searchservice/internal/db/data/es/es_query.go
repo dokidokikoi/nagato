@@ -1,37 +1,88 @@
 package es
 
+import "time"
+
 type elm map[string]interface{}
 
-func BulidQuery(esBool, highlight elm) elm {
-	return elm{
-		"query":     esBool,
-		"highlight": highlight,
-		"size":      25,
+func BulidQuery(esBool, highlight elm, from, size int, selectField []string) elm {
+	res := elm{
+		"from": from,
 		"sort": []interface{}{
 			elm{"_score": "desc"},
 			elm{"_doc": "asc"},
 		},
 	}
+	if esBool != nil {
+		res["query"] = esBool
+	}
+	if highlight != nil {
+		res["highlight"] = highlight
+	}
+	if size > 0 {
+		res["size"] = size
+	}
+
+	if len(selectField) > 0 {
+		res["_source"] = selectField
+	}
+	return res
 }
 
 func BuildBool(must, should []elm) elm {
+	mustElms := BuildMust(must)
+	shouldElms := BuildShould(should)
+	if mustElms != nil && shouldElms != nil {
+		return elm{
+			"bool": elm{
+				"must":   mustElms["must"],
+				"should": mustElms["should"],
+			},
+		}
+	}
+	if mustElms != nil {
+		return elm{
+			"bool": elm{
+				"must": mustElms["must"],
+			},
+		}
+	}
+	if shouldElms != nil {
+		return elm{
+			"bool": elm{
+				"should": mustElms["should"],
+			},
+		}
+	}
+	return nil
+}
+
+func BuildMust(element []elm) elm {
+	var res []elm
+	for _, e := range element {
+		if e != nil {
+			res = append(res, e)
+		}
+	}
+	if len(res) <= 0 {
+		return nil
+	}
 	return elm{
-		"bool": elm{
-			"must":   must,
-			"should": should,
-		},
+		"must": res,
 	}
 }
 
-func BulidMust(element []elm) elm {
-	return elm{
-		"must": element,
+func BuildShould(element []elm) elm {
+	var res []elm
+	for _, e := range element {
+		if e != nil {
+			res = append(res, e)
+		}
 	}
-}
-
-func BulidShould(element []elm) elm {
+	if len(res) <= 0 {
+		return nil
+	}
 	return elm{
-		"should": element,
+		"should": res,
 	}
 }
 
@@ -60,6 +111,15 @@ func BuildTerms(m map[string][]interface{}) []elm {
 	}
 
 	return res
+}
+
+func BuildOrTerms(field string, m interface{}) elm {
+
+	return elm{
+		"terms": elm{
+			field: m,
+		},
+	}
 }
 
 func BuildMatchPhrasePrefix(field, value string) elm {
@@ -92,12 +152,16 @@ func BuildMatchPhrasePrefixs(m map[string]string) []elm {
 }
 
 func BuildMatch(field, value string) elm {
+	if value == "" {
+		return elm{
+			"match_all": elm{},
+		}
+	}
 	return elm{
 		"match": elm{
 			field: elm{
 				"query":          value,
 				"max_expansions": 50,
-				"slop":           50,
 			},
 		},
 	}
@@ -119,13 +183,39 @@ func BuildMatchs(m map[string]string) []elm {
 	return res
 }
 
-func BuildRange(field string, gte interface{}, lt interface{}) elm {
+func BuildRange(field string, gte *uint, lt *uint) elm {
 	e := make(elm)
-	if gte != nil {
+	var tmp *uint = nil
+
+	if gte != tmp {
 		e["gte"] = gte
 	}
-	if lt != nil {
+	if lt != tmp {
 		e["lt"] = lt
+	}
+
+	if len(e) < 1 {
+		return nil
+	}
+	return elm{
+		"range": elm{
+			field: e,
+		},
+	}
+}
+
+func BuildTimeRange(field string, gte time.Time, lt time.Time) elm {
+	e := make(elm)
+
+	if !gte.IsZero() {
+		e["gte"] = gte
+	}
+	if !lt.IsZero() {
+		e["lt"] = lt
+	}
+
+	if len(e) < 1 {
+		return nil
 	}
 	return elm{
 		"range": elm{
