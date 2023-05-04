@@ -2,6 +2,7 @@ package service
 
 import (
 	"nagato/apiservice/internal/db"
+	"nagato/apiservice/internal/db/data"
 	"nagato/apiservice/internal/service/blank"
 	"nagato/apiservice/internal/service/matter"
 	"nagato/apiservice/internal/service/share"
@@ -42,7 +43,7 @@ func (s service) Share() share.IShareService {
 }
 
 func NewService() IService {
-	store, err := db.GetStoreFactory()
+	store, err := data.GetStoreDBFactory()
 	if err != nil {
 		panic(err)
 	}

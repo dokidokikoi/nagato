@@ -85,10 +85,9 @@ func GetStoreDBFactory() (db.Store, error) {
 }
 
 func SetStoreDBFactory() {
-	factory, err := GetStoreDBFactory()
+	var err error
+	datacFactory, err = GetStoreDBFactory()
 	if err != nil {
 		return
 	}
-
-	db.SetStoreFactory(factory)
 }
