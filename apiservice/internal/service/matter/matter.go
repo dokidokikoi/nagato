@@ -6,6 +6,7 @@ import (
 	"nagato/apiservice/internal/db"
 	"nagato/apiservice/internal/model"
 	"nagato/apiservice/stream"
+	commonEsModel "nagato/common/es/model"
 	"path/filepath"
 
 	meta "github.com/dokidokikoi/go-common/meta/option"
@@ -25,10 +26,16 @@ type IMatterService interface {
 	Get(ctx context.Context, example *model.Matter, option *meta.GetOption) (*model.Matter, error)
 	List(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, int64, error)
 	ListMatter(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, error)
+	ListRoot(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, error)
 
-	CreateResource(ctx context.Context, example *model.Matter) error
-	GetResourceMate(ctx context.Context, name string, version int) (*model.Matter, error)
-	SearchResourceAllVersion(ctx context.Context, name string, from, size int) ([]*model.Matter, error)
+	// CreateResource(ctx context.Context, example *model.Matter) error
+	// GetResourceMate(ctx context.Context, name string, version int) (*model.Matter, error)
+	// SearchResourceAllVersion(ctx context.Context, name string, from, size int) ([]*model.Matter, error)
+	Search(ctx context.Context, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Resource, int64, error)
+	CreateIndices(userID uint, indexReq string) error
+	CreateDocWithID(userID uint, id string, req commonEsModel.Resource) error
+	UpdateDoc(userID uint, id string, req commonEsModel.Resource) error
+	DelDoc(userID uint, id string) error
 
 	GetAllMatter(examples []*model.Matter) (map[uint]*model.Matter, []error)
 	GetSubMatter(example *model.Matter) ([]*model.Matter, []error)
@@ -78,6 +85,12 @@ func (s matterSrv) List(ctx context.Context, example *model.Matter, option *meta
 
 func (s matterSrv) ListMatter(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, error) {
 	return s.store.Matters().List(ctx, example, option)
+}
+
+func (s matterSrv) ListRoot(ctx context.Context, example *model.Matter, option *meta.ListOption) ([]*model.Matter, error) {
+	var res []*model.Matter
+	err := s.store.Matters().ListDB(ctx, example, option).Where("p_uuid is null").Find(&res).Error
+	return res, err
 }
 
 func (s matterSrv) GetAllMatter(examples []*model.Matter) (map[uint]*model.Matter, []error) {

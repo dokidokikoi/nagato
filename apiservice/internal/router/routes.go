@@ -50,6 +50,7 @@ func InitRoutes(r *gin.Engine) {
 		blankR.PATCH("/:id", blankController.Update)
 		blankR.DELETE("/:id", blankController.Delete)
 		blankR.GET("/:id", blankController.Get)
+		blankR.POST("/search", blankController.Search)
 	}
 
 	tagR := apiR.Group("/tag")
@@ -68,6 +69,12 @@ func InitRoutes(r *gin.Engine) {
 		shareR.DELETE("/:uuid", shareController.Delete)
 		shareR.PUT("/:uuid", shareController.Save)
 
+	}
+
+	resourceR := apiR.Group("/resource")
+	{
+		resourceCtrl := matter.NewMatterController()
+		resourceR.POST("/search", resourceCtrl.Search)
 	}
 
 	// userR := r.Group("/user")

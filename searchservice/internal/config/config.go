@@ -8,6 +8,7 @@ import (
 var configInfo = &config{}
 
 type config struct {
+	PGConfig     conf.PGConfig     `mapstructure:"postgresql"`
 	EsConfig     conf.EsConfig     `mapstructure:"elasticsearch"`
 	RedisConfig  conf.RedisConfig  `mapstructure:"redis"`
 	ServerConfig conf.ServerConfig `mapstructure:"server"`

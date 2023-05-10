@@ -6,22 +6,22 @@ import (
 
 type Resource struct {
 	ID        uint        `json:"id"`
-	UUID      string      `json:"uuid"`
-	PUUID     string      `json:"puuid"`
+	UUID      string      `json:"uuid,omitempty"`
+	PUUID     string      `json:"puuid,omitempty"`
 	UserID    uint        `json:"user_id"`
 	Dir       bool        `json:"dir"`
-	Name      string      `json:"name"`
-	Sha256    string      `json:"sha256"`
+	Name      string      `json:"name,omitempty"`
+	Sha256    string      `json:"sha256,omitempty"`
 	Size      uint        `json:"size"`
 	Privacy   bool        `json:"privacy"`
-	Path      string      `json:"path"`
-	Ext       string      `json:"ext"`
+	Path      string      `json:"path,omitempty"`
+	Ext       string      `json:"ext,omitempty"`
 	Times     uint        `json:"times"`
-	Children  []*Resource `json:"children"`
-	VisitTime time.Time   `json:"visit_time"`
-	UpdatedAt time.Time   `json:"update_at"`
-	CreatedAt time.Time   `json:"create_at"`
-	DeletedAt time.Time   `json:"deleted_at"`
+	Children  []*Resource `json:"children,omitempty"`
+	VisitTime time.Time   `json:"visit_time,omitempty"`
+	UpdatedAt time.Time   `json:"update_at,omitempty"`
+	CreatedAt time.Time   `json:"create_at,omitempty"`
+	DeletedAt time.Time   `json:"deleted_at,omitempty"`
 }
 
 type ResourceReq struct {

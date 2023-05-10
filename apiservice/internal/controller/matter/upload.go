@@ -75,10 +75,10 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 		return
 	}
 	// 将上传文件元信息加入es
-	if err := c.service.Matter().CreateResource(ctx, matter); err != nil {
+	if err := c.service.Matter().CreateDocWithID(createMatter.ID, fmt.Sprintf("%d", matter.ID), matter.ToEsStruct()); err != nil {
 		zaplog.L().Sugar().Errorf("上传文件元信息失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
-		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
-		return
+		// core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
+		// return
 	}
 
 	core.WriteResponse(ctx, myErrors.Success("上传成功"), nil)
@@ -112,6 +112,13 @@ func (c MatterController) GenUploadToken(ctx *gin.Context) {
 	}
 	// 计算文件路径
 	c.service.Matter().SetMatterPath(createMatter)
+
+	// 临时测试，待删
+	// err = c.service.Matter().CreateDocWithID(createMatter.UserID, fmt.Sprintf("%d", createMatter.ID), createMatter.ToEsStruct())
+	// if err != nil {
+	// 	zaplog.L().Sugar().Errorf("上传文件元信息失败, name: %s, hash: %s, err: %s", createMatter.Name, createMatter.Sha256, err.Error())
+	// }
+	//
 
 	token, err := c.service.Matter().GenUploadToken(ctx, createMatter)
 	if err != nil {

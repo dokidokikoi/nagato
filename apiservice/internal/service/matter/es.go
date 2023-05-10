@@ -8,6 +8,7 @@ import (
 	"nagato/apiservice/internal/model"
 	"nagato/apiservice/rpc/client"
 	"nagato/common/es"
+	commonEsModel "nagato/common/es/model"
 	"strings"
 )
 
@@ -72,4 +73,38 @@ func (s matterSrv) SearchLatestVersion(ctx context.Context, name string) (*model
 	}
 
 	return list[0], nil
+}
+
+func (r matterSrv) Search(ctx context.Context, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Resource, int64, error) {
+	res, err := r.store.Matters().SearchResource(0, resourceReq)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	resource := make([]commonEsModel.Resource, len(res))
+	for i := range res {
+		resource[i] = res[i].Source
+	}
+
+	return resource, 0, nil
+}
+
+func (r matterSrv) CreateIndices(userID uint, indexReq string) error {
+	return r.store.Matters().CreateIndices(userID, indexReq)
+}
+
+func (r matterSrv) CreateDocWithID(userID uint, id string, req commonEsModel.Resource) error {
+	return r.store.Matters().CreateDocWithID(userID, id, req)
+}
+
+func (r matterSrv) UpdateDoc(userID uint, id string, req commonEsModel.Resource) error {
+	data, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	return r.store.Matters().UpdateDoc(userID, id, bytes.NewBuffer(data))
+}
+
+func (r matterSrv) DelDoc(userID uint, id string) error {
+	return r.store.Matters().DelDoc(userID, id)
 }

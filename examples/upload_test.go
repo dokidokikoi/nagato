@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-var authorization = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiIxMjNAZXhhbXBsZS5jb20iLCJyb2xlIjoiIiwiZXhwIjoxNjc3ODIzMTUwLCJpYXQiOjE2Nzc3MzY3NTAsImlzcyI6ImhhcnVrYXplIiwibmJmIjoxNjc3NzM2NzUwfQ.jU_qjeBpnitqtwzWgVHTWuM_Q1kCWiA1ZRR_7Wd9_Y4"
+var authorization = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiIxMjNAZXhhbXBsZS5jb20iLCJyb2xlIjoiIiwiZXhwIjoxNzE0NDU3NjE2LCJpYXQiOjE2ODMwMDgwMTYsImlzcyI6ImhhcnVrYXplIiwibmJmIjoxNjgzMDA4MDE2fQ.c1VZqJEtNSKeekzfi1WSd113UobIhtdvvlKn7KYG4kg"
 
 type response struct {
 	Message string `json:"message"`
@@ -106,6 +106,7 @@ func Upload(token string, filePath string, seek int64, cacheSize int) error {
 
 		current += n
 	}
+
 }
 
 // 分片上传

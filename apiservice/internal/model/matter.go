@@ -1,6 +1,7 @@
 package model
 
 import (
+	commonEsModel "nagato/common/es/model"
 	"time"
 
 	"gorm.io/gorm"
@@ -27,4 +28,25 @@ type Matter struct {
 	CreatedAt time.Time      `json:"created_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty"`
 	User      *User          `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+func (m Matter) ToEsStruct() commonEsModel.Resource {
+	return commonEsModel.Resource{
+		ID:        m.ID,
+		UUID:      m.UUID,
+		PUUID:     m.PUUID,
+		UserID:    m.UserID,
+		Dir:       m.Dir,
+		Name:      m.Name,
+		Sha256:    m.Sha256,
+		Size:      m.Size,
+		Privacy:   m.Privacy,
+		Path:      m.Path,
+		Ext:       m.Ext,
+		Times:     m.Times,
+		VisitTime: m.VisitTime,
+		UpdatedAt: m.UpdatedAt,
+		CreatedAt: m.CreatedAt,
+		DeletedAt: m.DeletedAt.Time,
+	}
 }

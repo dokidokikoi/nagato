@@ -2,9 +2,15 @@ package data
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"nagato/apiservice/internal/db/data/es"
 	"nagato/apiservice/internal/db/data/postgres"
 	"nagato/apiservice/internal/db/data/redis"
 	"nagato/apiservice/internal/model"
+	commonEs "nagato/common/es"
+	commonEsModel "nagato/common/es/model"
+	"strings"
 	"time"
 
 	meta "github.com/dokidokikoi/go-common/meta/option"
@@ -13,6 +19,7 @@ import (
 
 type matters struct {
 	pg    *postgres.Store
+	esCli *es.Store
 	redis *redis.Store
 }
 
@@ -104,6 +111,27 @@ func (m matters) GetCache(ctx context.Context, key string) (string, error) {
 	return m.redis.Matters().Get(ctx, key)
 }
 
+func (m matters) CreateIndices(userID uint, indexReq string) error {
+	fmt.Println(indexReq)
+	return m.esCli.Resources().CreateIndex(fmt.Sprintf("resource_%d", userID), strings.NewReader(indexReq))
+}
+
+func (m matters) SearchResource(userID uint, req commonEsModel.ResourceReq) ([]commonEs.Result[commonEsModel.Resource], error) {
+	return m.esCli.Resources().Search(fmt.Sprintf("resource_%d", userID), req)
+}
+
+func (m matters) CreateDocWithID(userID uint, id string, req commonEsModel.Resource) error {
+	return m.esCli.Resources().CreateDocWithID(fmt.Sprintf("resource_%d", userID), id, req)
+}
+
+func (m matters) UpdateDoc(userID uint, id string, body io.Reader) error {
+	return m.esCli.Resources().UpdateDoc(fmt.Sprintf("resource_%d", userID), id, body)
+}
+
+func (m matters) DelDoc(userID uint, id string) error {
+	return m.esCli.Resources().DelDoc(fmt.Sprintf("blank_%d", userID), id)
+}
+
 func newMatters(center *dataCenter) *matters {
-	return &matters{pg: center.pg, redis: center.redis}
+	return &matters{pg: center.pg, redis: center.redis, esCli: center.esCli}
 }

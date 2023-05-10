@@ -2,6 +2,7 @@ package data
 
 import (
 	"nagato/apiservice/internal/db"
+	"nagato/apiservice/internal/db/data/es"
 	"nagato/apiservice/internal/db/data/mongo"
 	"nagato/apiservice/internal/db/data/postgres"
 	"nagato/apiservice/internal/db/data/redis"
@@ -14,13 +15,14 @@ var (
 )
 
 type dataCenter struct {
+	esCli *es.Store
 	pg    *postgres.Store
 	redis *redis.Store
 	mongo *mongo.Store
 }
 
 func (d dataCenter) Blanks() db.IBlankStore {
-	return d.pg.Blanks()
+	return newBlanks(d)
 }
 
 func (d dataCenter) BlankMatters() db.IBlankMatterStore {
@@ -75,7 +77,13 @@ func GetStoreDBFactory() (db.Store, error) {
 			panic(err)
 		}
 
+		esCli, err := es.GetEsFactory()
+		if err != nil {
+			panic(err)
+		}
+
 		datacFactory = &dataCenter{
+			esCli: esCli,
 			pg:    pg,
 			redis: redisCli,
 		}

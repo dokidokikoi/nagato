@@ -17,6 +17,8 @@ type config struct {
 	ServerConfig   conf.ServerConfig   `mapstructure:"server"`
 	ServiceConfig  ServiceConfig       `mapstructure:"services"`
 	EtcdConfig     conf.EtcdConfig     `mapstructure:"etcd"`
+
+	EsConfig conf.EsConfig `mapstructure:"elasticsearch"`
 }
 
 func Config() *config {

@@ -11,6 +11,8 @@ import (
 	"nagato/apiservice/stream"
 	"nagato/common/tools"
 
+	zaplog "github.com/dokidokikoi/go-common/log/zap"
+
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
@@ -75,6 +77,11 @@ func (s matterSrv) GenUploadToken(ctx context.Context, example *model.Matter) (s
 	err = s.store.Matters().Create(ctx, example, nil)
 	if err != nil {
 		return "", err
+	}
+
+	err = s.store.Matters().CreateDocWithID(example.UserID, fmt.Sprintf("%d", example.ID), example.ToEsStruct())
+	if err != nil {
+		zaplog.L().Sugar().Errorf("上传文件元信息失败, name: %s, hash: %s, err: %s", example.Name, example.Sha256, err.Error())
 	}
 
 	return rsPutStream.ToToken(), nil

@@ -60,10 +60,17 @@ func (c MatterController) DownloadMatter(ctx *gin.Context) {
 		reader = r
 	}
 
-	if end == -1 || end == int64(matter.Parent.Size) {
+	go func() {
 		// 更新文件下载数
-		c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
-	}
+		err = c.service.Matter().Update(ctx, &model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()})
+		if err != nil {
+			zap.L().Sugar().Errorf("更新文件下载数失败: uuid: %s, db err: %s", uuid, err.Error())
+		}
+		err = c.service.Matter().UpdateDoc(currentUser.ID, fmt.Sprintf("%d", matter.ID), model.Matter{ID: matter.ID, Times: matter.Times + 1, VisitTime: time.Now()}.ToEsStruct())
+		if err != nil {
+			zap.L().Sugar().Errorf("更新文件下载数失败: uuid: %s, es err: %s", uuid, err.Error())
+		}
+	}()
 
 	io.Copy(ctx.Writer, reader)
 }

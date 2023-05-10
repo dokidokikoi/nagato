@@ -2,6 +2,7 @@ package matter
 
 import (
 	"errors"
+	"fmt"
 	"nagato/apiservice/internal/model"
 	"os/exec"
 	"strings"
@@ -43,6 +44,15 @@ func (c MatterController) CreateDir(ctx *gin.Context) {
 			core.WriteResponse(ctx, commonErrors.ApiErrFolderRepeatFile, "")
 			return
 		}
+		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
+		return
+	}
+
+	// 存入es
+	err = c.service.Matter().CreateDocWithID(currentUser.ID, fmt.Sprintf("%d", createMatter.ID), createMatter.ToEsStruct())
+	// 如果失败可以考虑存入数据库，定时清理失败的任务
+	if err != nil {
+		zaplog.L().Sugar().Errorf("存入es失败, err: %s", err.Error())
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
 		return
 	}

@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql/driver"
+	commonEsModel "nagato/common/es/model"
 	"strings"
 	"time"
 
@@ -36,6 +37,21 @@ type Blank struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	CreatedAt time.Time      `json:"created_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+}
+
+func (b Blank) ToEsStruct(matterIDs []uint) commonEsModel.Blank {
+	return commonEsModel.Blank{
+		ID:        b.ID,
+		Type:      b.Type,
+		Title:     b.Title,
+		Content:   b.Content,
+		Tags:      b.Tags,
+		MatterIDs: matterIDs,
+		UserID:    b.UserID,
+		UpdatedAt: b.UpdatedAt,
+		CreatedAt: b.CreatedAt,
+		DeletedAt: b.DeletedAt.Time,
+	}
 }
 
 type BlankMatter struct {

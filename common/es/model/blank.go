@@ -5,17 +5,17 @@ import (
 )
 
 type Blank struct {
-	ID        uint        `json:"id"`
-	Type      string      `json:"type"`
-	Title     string      `json:"title"`
-	Content   string      `json:"content"`
-	Tags      []string    `json:"tags"`
-	Matters   []*Resource `json:"matters"`
-	MatterIDs []uint      `json:"matter_ids"`
-	UserID    uint        `json:"user_id"`
-	UpdatedAt time.Time   `json:"update_at"`
-	CreatedAt time.Time   `json:"create_at"`
-	DeletedAt time.Time   `json:"deleted_at"`
+	ID        uint        `json:"id,omitempty"`
+	Type      string      `json:"type,omitempty"`
+	Title     string      `json:"title,omitempty"`
+	Content   string      `json:"content,omitempty"`
+	Tags      []string    `json:"tags,omitempty"`
+	Matters   []*Resource `json:"matters,omitempty"`
+	MatterIDs []uint      `json:"matter_ids,omitempty"`
+	UserID    uint        `json:"user_id,omitempty"`
+	UpdatedAt time.Time   `json:"update_at,omitempty"`
+	CreatedAt time.Time   `json:"create_at,omitempty"`
+	DeletedAt time.Time   `json:"deleted_at,omitempty"`
 }
 
 type BlankReq struct {

@@ -1,6 +1,7 @@
 package matter
 
 import (
+	"fmt"
 	"nagato/apiservice/internal/model"
 	"path"
 	"strings"
@@ -38,6 +39,10 @@ func (c MatterController) Update(ctx *gin.Context) {
 		zaplog.L().Error("更新matter失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, "")
 		return
+	}
+	err = c.service.Matter().UpdateDoc(currentUser.ID, fmt.Sprintf("%d", matter.ID), matter.ToEsStruct())
+	if err != nil {
+		zaplog.L().Sugar().Errorf("更新matter失败, es err: %s", err.Error())
 	}
 
 	core.WriteResponse(ctx, myErrors.Success("更新matter成功"), "")
