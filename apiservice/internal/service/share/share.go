@@ -15,6 +15,7 @@ type IShareService interface {
 	Save(ctx context.Context, example *model.Share, option *meta.UpdateOption) error
 	Del(ctx context.Context, example *model.Share) error
 	Get(ctx context.Context, example *model.Share, option *meta.GetOption) (*model.Share, error)
+	List(ctx context.Context, example *model.Share, option *meta.ListOption) ([]*model.Share, int64, error)
 
 	Receive(src []*model.Matter, target []uint) ([]*model.Matter, error)
 	receiveMap(src []*model.Matter, m map[uint]struct{}) ([]*model.Matter, error)
@@ -65,6 +66,18 @@ func (s shareSrv) Del(ctx context.Context, example *model.Share) error {
 
 func (s shareSrv) Get(ctx context.Context, example *model.Share, option *meta.GetOption) (*model.Share, error) {
 	return s.store.Shares().Get(ctx, example, option)
+}
+
+func (s shareSrv) List(ctx context.Context, example *model.Share, option *meta.ListOption) ([]*model.Share, int64, error) {
+	res, err := s.store.Shares().List(ctx, example, option)
+	if err != nil {
+		return nil, 0, err
+	}
+	if option == nil {
+		option = &meta.ListOption{}
+	}
+	total, _ := s.store.Shares().Count(ctx, example, &option.GetOption)
+	return res, total, nil
 }
 
 func (s shareSrv) Receive(src []*model.Matter, target []uint) ([]*model.Matter, error) {

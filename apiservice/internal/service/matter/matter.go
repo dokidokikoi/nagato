@@ -31,7 +31,7 @@ type IMatterService interface {
 	// CreateResource(ctx context.Context, example *model.Matter) error
 	// GetResourceMate(ctx context.Context, name string, version int) (*model.Matter, error)
 	// SearchResourceAllVersion(ctx context.Context, name string, from, size int) ([]*model.Matter, error)
-	Search(ctx context.Context, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Resource, int64, error)
+	Search(ctx context.Context, userID uint, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Resource, int64, error)
 	CreateIndices(userID uint, indexReq string) error
 	CreateDocWithID(userID uint, id string, req commonEsModel.Resource) error
 	UpdateDoc(userID uint, id string, req commonEsModel.Resource) error

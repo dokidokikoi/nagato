@@ -59,7 +59,7 @@ func (s ShareController) Save(ctx *gin.Context) {
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
 	}
 	currentUser := s.GetCurrentUser(ctx)
-	saveMatter := make([]*model.Matter, 0)
+	// saveMatter := make([]*model.Matter, 0)
 
 	// 递归获取需要存储的文件信息
 	var getAllSaveMatters func(matters []*model.Matter) error
@@ -87,7 +87,10 @@ func (s ShareController) Save(ctx *gin.Context) {
 			if err != nil {
 				return err
 			}
-			saveMatter = append(saveMatter, v)
+			if err := s.service.Matter().Create(ctx, v); err != nil {
+				return err
+			}
+			// saveMatter = append(saveMatter, v)
 
 			subMatters, _, err := s.service.Matter().List(ctx, &model.Matter{PUUID: m.UUID}, nil)
 			if err != nil {
@@ -95,9 +98,11 @@ func (s ShareController) Save(ctx *gin.Context) {
 				return err
 			}
 
+			input.PUUID = v.UUID
 			if err := getAllSaveMatters(subMatters); err != nil {
 				return err
 			}
+			input.PUUID = v.PUUID
 		}
 		return nil
 	}
@@ -108,12 +113,12 @@ func (s ShareController) Save(ctx *gin.Context) {
 		return
 	}
 
-	errs := s.service.Matter().CreateCollection(ctx, saveMatter)
-	if errs != nil {
-		zaplog.L().Error("保存matters列表失败", zap.Errors("errs", errs))
-		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
-		return
-	}
+	// errs := s.service.Matter().CreateCollection(ctx, saveMatter)
+	// if errs != nil {
+	// 	zaplog.L().Error("保存matters列表失败", zap.Errors("errs", errs))
+	// 	core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
+	// 	return
+	// }
 
 	core.WriteResponse(ctx, myErrors.Success("保存成功"), "")
 }

@@ -19,6 +19,10 @@ func InitRoutes(r *gin.Engine) {
 	apiR.POST("/register", userController.Register)
 
 	apiR.Use(middleware.Auth())
+	userR := apiR.Group("/user")
+	{
+		userR.GET("", userController.Me)
+	}
 	fileR := apiR.Group("/file")
 	{
 		fileController := matter.NewMatterController()
@@ -65,6 +69,7 @@ func InitRoutes(r *gin.Engine) {
 	{
 		shareController := share.NewShareController()
 		shareR.GET("/:uuid", shareController.Get)
+		shareR.GET("", shareController.List)
 		shareR.POST("", shareController.Create)
 		shareR.DELETE("/:uuid", shareController.Delete)
 		shareR.PUT("/:uuid", shareController.Save)

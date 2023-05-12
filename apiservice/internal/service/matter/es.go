@@ -75,8 +75,8 @@ func (s matterSrv) SearchLatestVersion(ctx context.Context, name string) (*model
 	return list[0], nil
 }
 
-func (r matterSrv) Search(ctx context.Context, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Resource, int64, error) {
-	res, err := r.store.Matters().SearchResource(0, resourceReq)
+func (r matterSrv) Search(ctx context.Context, userID uint, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Resource, int64, error) {
+	res, err := r.store.Matters().SearchResource(userID, resourceReq)
 	if err != nil {
 		return nil, 0, err
 	}

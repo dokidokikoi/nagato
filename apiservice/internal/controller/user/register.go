@@ -2,6 +2,8 @@ package user
 
 import (
 	"nagato/apiservice/internal/model"
+	"os/exec"
+	"strings"
 
 	"github.com/dokidokikoi/go-common/core"
 	"github.com/dokidokikoi/go-common/crypto"
@@ -30,7 +32,14 @@ func (c UserController) Register(ctx *gin.Context) {
 		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
 		return
 	}
+	newUUID, err := exec.Command("uuidgen").Output()
+	if err != nil {
+		zaplog.L().Sugar().Errorf("生成uuid出错, err: %s", err.Error())
+		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
+		return
+	}
 	creatUser := &model.User{
+		UUID:     strings.Trim(string(newUUID), "\n"),
 		Email:    input.Email,
 		Username: input.Username,
 		Password: pwd,

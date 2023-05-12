@@ -20,7 +20,7 @@ type IBlankService interface {
 	Del(ctx context.Context, example *model.Blank) error
 	Get(ctx context.Context, example *model.Blank, option *meta.GetOption) (*model.Blank, error)
 
-	Search(ctx context.Context, blankReq commonEsModel.BlankReq, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Blank, int64, error)
+	Search(ctx context.Context, UserID uint, blankReq commonEsModel.BlankReq, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Blank, int64, error)
 	CreateIndices(userID uint, indexReq string) error
 	CreateDocWithID(userID uint, id string, req commonEsModel.Blank) error
 	UpdateDoc(userID uint, id string, req commonEsModel.Blank) error
@@ -65,12 +65,12 @@ func (b blankSrv) Get(ctx context.Context, example *model.Blank, option *meta.Ge
 	return b.store.Blanks().Get(ctx, example, option)
 }
 
-func (b blankSrv) Search(ctx context.Context, blankReq commonEsModel.BlankReq, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Blank, int64, error) {
+func (b blankSrv) Search(ctx context.Context, UserID uint, blankReq commonEsModel.BlankReq, resourceReq commonEsModel.ResourceReq) ([]commonEsModel.Blank, int64, error) {
 	resourceReq.Select = []string{"id"}
 	resourceReq.Text = blankReq.Text
 	resourceReq.Page = 0
 	resourceReq.PageSize = 1000
-	res, err := b.store.Matters().SearchResource(0, resourceReq)
+	res, err := b.store.Matters().SearchResource(UserID, resourceReq)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -18,3 +18,5 @@ logs
 application.yml
 __debug_bin
 *.crt
+
+.DS_Store

@@ -18,7 +18,8 @@ func (c MatterController) Search(ctx *gin.Context) {
 		return
 	}
 
-	res, total, err := c.service.Matter().Search(ctx, inputR)
+	u := c.Controller.GetCurrentUser(ctx)
+	res, total, err := c.service.Matter().Search(ctx, u.ID, inputR)
 	if err != nil {
 		zaplog.L().Error("搜索resource出错", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, "")

@@ -19,7 +19,8 @@ func (c BlankController) Search(ctx *gin.Context) {
 		return
 	}
 
-	res, total, err := c.service.Blank().Search(ctx, input, commonEsModel.ResourceReq{})
+	u := c.Controller.GetCurrentUser(ctx)
+	res, total, err := c.service.Blank().Search(ctx, u.ID, input, commonEsModel.ResourceReq{})
 	if err != nil {
 		zaplog.L().Error("搜索blank出错", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, "")

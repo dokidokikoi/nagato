@@ -18,16 +18,15 @@ func (c MatterController) DelMatter(ctx *gin.Context) {
 
 	// 判断当前用户是否拥有此文件
 	currentUser := c.GetCurrentUser(ctx)
-	err := c.service.Matter().Del(ctx, &model.Matter{UUID: uuid, UserID: currentUser.ID}, nil)
-	if err != nil {
-		zaplog.L().Error("删除文件失败", zap.Error(err))
-		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
-		return
-	}
-
 	m, err := c.service.Matter().Get(ctx, &model.Matter{UUID: uuid, UserID: currentUser.ID}, &meta.GetOption{Select: []string{"id"}})
 	if err != nil {
 		zaplog.L().Error("获取文件失败", zap.Error(err))
+		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
+		return
+	}
+	err = c.service.Matter().Del(ctx, &model.Matter{UUID: uuid, UserID: currentUser.ID}, nil)
+	if err != nil {
+		zaplog.L().Error("删除文件失败", zap.Error(err))
 		core.WriteResponse(ctx, myErrors.ApiErrDatabaseOp, nil)
 		return
 	}
