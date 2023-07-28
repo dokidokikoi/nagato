@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+
 	"nagato/apiservice/internal/heartbeat"
 	"nagato/apiservice/internal/locate"
 	"nagato/apiservice/internal/model"
@@ -14,7 +15,9 @@ import (
 	meta "github.com/dokidokikoi/go-common/meta/option"
 )
 
+// 上传文件
 func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Reader) error {
+	// 检查是否已经上传
 	if locate.Exist(example.Sha256) {
 		_, err := s.Get(ctx, &model.Matter{Path: example.Path}, &meta.GetOption{Include: []string{"sha256"}})
 		if err != nil {
@@ -24,6 +27,7 @@ func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Re
 		return nil
 	}
 
+	// 获取切片数量的服务地址
 	servers := heartbeat.ChooseRandomDataServers(stream.ALL_SHARDS, nil)
 	if len(servers) < stream.ALL_SHARDS {
 		return fmt.Errorf("cannot find enough dataServer")
@@ -47,11 +51,14 @@ func (s matterSrv) Upload(ctx context.Context, example *model.Matter, data io.Re
 		return errors.New("文件散列值不匹配")
 	}
 
+	// 临时文件转正
 	tempPutStream.Commit(true)
 
+	// 将文件元信息写入数据库
 	return s.Create(ctx, example)
 }
 
+// 生成大文件上传 token
 func (s matterSrv) GenUploadToken(ctx context.Context, example *model.Matter) (string, error) {
 	if locate.Exist(example.Sha256) {
 		_, err := s.Get(ctx, &model.Matter{Path: example.Path, UserID: example.UserID}, nil)
@@ -80,6 +87,8 @@ func (s matterSrv) GenUploadToken(ctx context.Context, example *model.Matter) (s
 	return rsPutStream.ToToken(), nil
 }
 
+// 大文件上传(需要token)
+// offset 是已经上传文件的大小
 func (s matterSrv) UploadBigMatter(ctx context.Context, token string, offset uint, data io.Reader) error {
 	r, err := stream.NewRSResumablePutStreamFromToken(token)
 	if err != nil {

@@ -5,13 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
+	"os"
+	"time"
+
 	"nagato/common/tools"
 	"nagato/dataservice/internal/config"
 	"nagato/dataservice/internal/locate"
 	"nagato/dataservice/internal/model"
-	"net/url"
-	"os"
-	"time"
 )
 
 // 将临时文件的信息存储到临时目录并创建出临时文件的文件
@@ -32,6 +33,7 @@ func (s matterSrv) CreateTempFile(ctx context.Context, hashEncode string, uuid s
 	if err != nil {
 		return err
 	}
+	// 5天后自动删除
 	go func() {
 		time.Sleep(5 * 24 * time.Hour)
 		os.Remove(config.Config().FileSystemConfig.TempDir + info.Uuid + ".dat")

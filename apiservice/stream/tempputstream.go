@@ -1,13 +1,14 @@
 package stream
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"strings"
 
 	dataRpc "nagato/apiservice/rpc/client/data"
 )
 
+// 用于上传临时文件
 type TempPutStream struct {
 	Total  uint
 	Size   uint
@@ -15,12 +16,15 @@ type TempPutStream struct {
 	Uuid   string
 }
 
+// 实现 Writer 接口
+// 将数据通过 grpc 写入数据服务的磁盘
 func (t *TempPutStream) Write(p []byte) (n int, err error) {
+	// 获取数据服务
 	dataClient, err := dataRpc.GetDataClient(t.Server)
 	if err != nil {
 		return 0, err
 	}
-	err = dataClient.UploadTempFile(context.Background(), t.Uuid, strings.NewReader(string(p)))
+	err = dataClient.UploadTempFile(context.Background(), t.Uuid, bytes.NewBuffer(p))
 	if err != nil {
 		return 0, err
 	}
@@ -31,6 +35,7 @@ func (t *TempPutStream) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// 临时文件转正
 func (t *TempPutStream) Commit(flag bool, hash string) {
 	dataClient, err := dataRpc.GetDataClient(t.Server)
 	if err != nil {
@@ -50,6 +55,7 @@ func NewTempPutStream(server string, hash string, size uint) (*TempPutStream, er
 	if err != nil {
 		return nil, err
 	}
+	// 获取 uuid
 	uuid, err := dataClient.CreateTempInfo(context.Background(), hash, int64(size))
 	if err != nil {
 		return nil, err

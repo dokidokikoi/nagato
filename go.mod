@@ -3,7 +3,7 @@ module nagato
 go 1.19
 
 require (
-	github.com/dokidokikoi/go-common v0.0.0-20230126103301-20d76299153e
+	github.com/dokidokikoi/go-common v0.0.0-20230411082443-515febb24dee
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-kratos/kratos/v2 v2.5.3
 	github.com/pkg/errors v0.9.1
@@ -58,11 +58,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/dokidokikoi/go-common => /Users/kido/gitcode/nagato_common/go-common
-
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v8 v8.6.0
 	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

@@ -17,6 +17,7 @@ func Init(r *gin.Engine) {
 	data.SetStoreDBFactory()
 	client.InitClients()
 
+	// 不将base64编码的路径解码
 	r.UseRawPath = true
 	router.InitRoutes(r)
 }

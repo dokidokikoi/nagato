@@ -6,14 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	pb "nagato/common/proto/data"
-	"nagato/dataservice/internal/config"
-	"nagato/dataservice/internal/model"
-	"nagato/dataservice/internal/service"
 	"net/url"
 	"os"
 	"os/exec"
 	"strings"
+
+	pb "nagato/common/proto/data"
+	"nagato/dataservice/internal/config"
+	"nagato/dataservice/internal/model"
+	"nagato/dataservice/internal/service"
 
 	zaplog "github.com/dokidokikoi/go-common/log/zap"
 	"go.uber.org/zap"
@@ -59,6 +60,7 @@ func (d *DataService) UploadTempFile(stream pb.Data_UploadTempFileServer) error 
 		}
 
 		if uuid == "" {
+			// 如果 uuid 为空，打开 uuid 对应的临时文件
 			uuid = req.GetUuid()
 			tempInfo, err = model.ReadFromTempFile(uuid)
 			if err != nil {
@@ -70,6 +72,7 @@ func (d *DataService) UploadTempFile(stream pb.Data_UploadTempFileServer) error 
 			}
 			defer tempFile.Close()
 		} else {
+			// 将数据写入临时文件
 			data := req.GetData()
 			_, err = io.Copy(tempFile, bytes.NewBuffer(data))
 			if err != nil {

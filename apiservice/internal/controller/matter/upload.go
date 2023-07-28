@@ -2,16 +2,17 @@ package matter
 
 import (
 	"fmt"
-	"nagato/apiservice/internal/locate"
-	"nagato/apiservice/internal/model"
-	"nagato/apiservice/stream"
-	commonErrors "nagato/common/errors"
-	"nagato/common/tools"
 	"net/http"
 	"net/url"
 	"os/exec"
 	"path"
 	"strings"
+
+	"nagato/apiservice/internal/locate"
+	"nagato/apiservice/internal/model"
+	"nagato/apiservice/stream"
+	commonErrors "nagato/common/errors"
+	"nagato/common/tools"
 
 	"github.com/dokidokikoi/go-common/core"
 	myErrors "github.com/dokidokikoi/go-common/errors"
@@ -32,23 +33,29 @@ func (c MatterController) Locate(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, info)
 }
 
+// 一次性完成上传文件
 func (c MatterController) UploadMatter(ctx *gin.Context) {
+	// 获取文件名
 	name := ctx.Param("name")
+	// 从 http 头获取文件散列值
 	hash := tools.GetHashFromHeader(ctx.Request.Header)
 	if hash == "" {
 		zaplog.L().Sugar().Errorf("name: %s hash: %s 不能为空", name, hash)
 		core.WriteResponse(ctx, myErrors.ApiErrValidation, nil)
 		return
 	}
+	// 从 http 头获取文件大小
 	size := tools.GetSizeFromHeader(ctx.Request.Header)
 
 	var err error
+	// 从 http 头生成 uuid
 	newUUID, err := exec.Command("uuidgen").Output()
 	if err != nil {
 		zaplog.L().Sugar().Errorf("生成uuid出错, err: %s", err.Error())
 		core.WriteResponse(ctx, myErrors.ApiErrSystemErr, nil)
 		return
 	}
+	// 获取文件后缀
 	ext := strings.TrimLeft(path.Ext(name), ".")
 	createMatter := &model.Matter{
 		UUID:   strings.Trim(string(newUUID), "\n"),
@@ -61,13 +68,14 @@ func (c MatterController) UploadMatter(ctx *gin.Context) {
 	// 计算文件路径
 	c.service.Matter().SetMatterPath(createMatter)
 
+	// 上传文件
 	err = c.service.Matter().Upload(ctx, createMatter, ctx.Request.Body)
 	if err != nil {
 		zaplog.L().Sugar().Errorf("上传文件失败, name: %s, hash: %s, err: %s", name, hash, err.Error())
 		ctx.JSON(http.StatusInternalServerError, "")
 		return
 	}
-
+	// 检查数据库是否保持成功
 	matter, err := c.service.Matter().Get(ctx, &model.Matter{Path: createMatter.Path}, &meta.GetOption{Include: []string{"path"}})
 	if err != nil {
 		zaplog.L().Sugar().Errorf("获取文件数据库信息失败, name: %s, path: %s, err: %s", matter.Name, matter.Sha256, err.Error())
@@ -162,5 +170,4 @@ func (c MatterController) Head(ctx *gin.Context) {
 }
 
 func (c MatterController) UploadProgress(ctx *gin.Context) {
-
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+
 	pb "nagato/common/proto/data"
 
 	"google.golang.org/grpc"
@@ -19,7 +20,6 @@ func (d DataService) CreateTempInfo(ctx context.Context, name string, size int64
 		Name: name,
 		Size: size,
 	})
-
 	if err != nil {
 		return
 	}
@@ -120,6 +120,7 @@ func (d DataService) CheckTempFileHash(ctx context.Context, uuid, hash string, o
 	return err
 }
 
+// 获取 dataservice 远程调用对象
 func GetDataClient(addr string) (*DataService, error) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))

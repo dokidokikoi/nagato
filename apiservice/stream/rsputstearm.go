@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+
 	"nagato/common/tools"
 )
 
@@ -20,6 +21,7 @@ type RSPutStream struct {
 	*encoder
 }
 
+// 将完成上传的临时文件转正
 func (s *RSPutStream) Commit(success bool) {
 	// 将缓存里的数据完全写入， 传入hash校验分片
 	s.Flush()

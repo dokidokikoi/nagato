@@ -2,11 +2,12 @@ package heartbeat
 
 import (
 	"math/rand"
-	"nagato/apiservice/internal/config"
-	"nagato/common/rabbitmq"
 	"strconv"
 	"sync"
 	"time"
+
+	"nagato/apiservice/internal/config"
+	"nagato/common/rabbitmq"
 )
 
 var (
@@ -14,6 +15,7 @@ var (
 	mutex       sync.Mutex
 )
 
+// 监听 dataservice 的心跳消息
 func ListenHeartbeat() {
 	q := rabbitmq.New(config.Config().RabbitMqConfig.Dns())
 	defer q.Close()
@@ -35,6 +37,7 @@ func ListenHeartbeat() {
 	}
 }
 
+// 移除宕机的服务地址
 func removeExpireDataServer() {
 	for {
 		time.Sleep(time.Second * 5)
@@ -60,6 +63,8 @@ func GetDataServers() []string {
 	return ds
 }
 
+// 返回随机 n 个不包含 exclude 地址的数据服务地址
+// 若最终数量少于 n，则返回实际数量的切片
 func ChooseRandomDataServers(n int, exclude map[int]string) []string {
 	candidates := make([]string, 0)
 	reverseExcludeMap := make(map[string]int)

@@ -2,10 +2,11 @@ package locate
 
 import (
 	"encoding/json"
+	"time"
+
 	"nagato/apiservice/internal/config"
 	"nagato/common/rabbitmq"
 	"nagato/common/types"
-	"time"
 )
 
 type LocateMessage struct {
@@ -24,6 +25,7 @@ func Locate(hash string) map[int]string {
 		q.Close()
 	}()
 
+	// 获取各 dataservice 的分片 id 和地址
 	locateInfo := make(map[int]string)
 	for i := 0; i < 4; i++ {
 		msg := <-c
@@ -38,6 +40,9 @@ func Locate(hash string) map[int]string {
 	return locateInfo
 }
 
+// 文件是否存在
+// 因为将一个文件分成了 3 个数据片和 1 个校验片
+// 所以最多允许丢失一个分片
 func Exist(hash string) bool {
 	return len(Locate(hash)) >= 3
 }
